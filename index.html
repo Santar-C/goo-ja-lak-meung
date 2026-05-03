@@ -1,773 +1,1891 @@
-```html
 <!DOCTYPE html>
+
 <html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>กูจะลากมึงเอง V14 | The Marathon Protocol</title>
+    <title>GooJaLak V15 | BEAST PROTOCOL</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Bebas+Neue&family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root { --bg-dark: #000000; --primary: #f97316; --run: #3b82f6; }
-        body { font-family: 'Kanit', sans-serif; background-color: var(--bg-dark); color: #f8fafc; overflow-x: hidden; }
-        .app-container { max-width: 480px; margin: 0 auto; min-height: 100vh; background: var(--bg-dark); position: relative; padding-bottom: 100px; box-shadow: 0 0 50px rgba(0,0,0,0.9); }
-        .hide { display: none !important; }
-        
-        .glass-panel { background: rgba(15, 15, 15, 0.95); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); }
-        input, select, textarea { background-color: #111; border: 1px solid #333; color: white; transition: all 0.3s; }
-        input:focus, select:focus, textarea:focus { border-color: var(--primary); outline: none; }
-
-        .eq-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; max-height: 200px; overflow-y: auto; padding-right: 5px; }
-        .eq-btn { background-color: #111; border: 1px solid #222; color: #71717a; transition: all 0.2s; padding: 10px; border-radius: 12px; font-size: 11px; font-weight: bold; text-align: left; display: flex; justify-content: space-between; align-items: center; }
-        .eq-btn.selected { background-color: rgba(249, 115, 22, 0.1); border-color: var(--primary); color: var(--primary); }
-
-        .slide-up { animation: slideUp 0.3s ease-out forwards; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: #222; color: white; padding: 12px 24px; border-radius: 12px; font-weight: bold; font-size: 12px; z-index: 9999; transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); box-shadow: 0 10px 30px rgba(0,0,0,0.8); border: 1px solid #333; width: 90%; max-width: 400px; text-align: center; }
-        #toast.show { transform: translateX(-50%) translateY(0); }
-        #toast.error { border-color: #ef4444; color: #ef4444; background: #2a0a0a; }
-        #toast.success { border-color: #22c55e; color: #22c55e; background: #0a2a12; }
-        #toast.levelup { border-color: #f97316; color: #f97316; background: #2a150a; font-size: 14px; text-transform: uppercase; }
-
-        .bottom-nav { position: fixed; bottom: 0; max-width: 480px; width: 100%; background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(20px); border-top: 1px solid #1a1a1a; display: flex; justify-content: space-around; padding: 15px 0 25px 0; z-index: 50; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: #52525b; font-size: 10px; font-weight: 700; transition: all 0.3s; width: 25%; }
-        .nav-item.active { color: var(--primary); }
-        .nav-item .icon { font-size: 20px; margin-bottom: 3px; filter: grayscale(100%); transition: all 0.3s; }
-        .nav-item.active .icon { filter: grayscale(0%); text-shadow: 0 0 15px rgba(249, 115, 22, 0.8); transform: scale(1.1); }
-        
-        .mode-toggle { display: flex; background: #111; border-radius: 12px; border: 1px solid #333; overflow: hidden; }
-        .mode-btn { flex: 1; text-align: center; font-size: 10px; font-weight: bold; padding: 12px 0; color: #666; transition: all 0.2s; }
-        .mode-btn.active { background: #222; color: white; border-bottom: 2px solid var(--primary); }
-
-        .level-badge { background: linear-gradient(45deg, #f97316, #ef4444); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900; }
-        .eq-tag { font-size: 8px; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; font-weight: bold; background: #333; color: #aaa; margin-left: auto; }
-        
-        .run-pulse { animation: runPulse 2s infinite; }
-        @keyframes runPulse { 0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); } 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); } }
-    </style>
-</head>
-<body class="selection:bg-orange-500 selection:text-white">
-
-    <div id="toast">Message here</div>
-
-    <div class="app-container">
-        <!-- HEADER -->
-        <header class="pt-10 pb-4 px-6 sticky top-0 z-40 bg-black/90 backdrop-blur-md border-b border-zinc-900">
-            <div class="flex justify-between items-center slide-up">
-                <div>
-                    <h1 class="text-3xl font-black uppercase tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-red-600 leading-none">กูจะลากมึงเอง <span class="text-[10px] text-white align-top">V14</span></h1>
-                    <p class="text-[10px] text-blue-500 tracking-widest font-bold mt-1 uppercase">The Marathon Protocol</p>
-                </div>
-                <div class="flex items-center gap-2">
-                    <div class="bg-zinc-900 border border-zinc-800 px-2 py-1 rounded-lg flex items-center gap-1" id="headerLevelBox">
-                        <span class="text-xs">⭐</span><span class="text-xs font-black level-badge" id="headerLevel">LV.1</span>
-                    </div>
-                </div>
-            </div>
-        </header>
-
-        <!-- SETUP SCREEN -->
-        <div id="setupScreen" class="px-6 hide slide-up">
-            <div class="text-center mb-6 mt-4">
-                <span class="text-6xl block mb-2">🔥</span>
-                <h2 class="text-2xl font-black text-white">ตื่นจากฝันแล้วกรอกความจริง</h2>
-            </div>
-
-            <!-- Import Data Box -->
-            <div class="bg-blue-900/20 border border-blue-900 p-4 rounded-2xl mb-6">
-                <h3 class="text-xs font-bold text-blue-400 mb-2 uppercase flex items-center gap-2"><span>📥</span> กู้คืนข้อมูล</h3>
-                <textarea id="importDataArea" rows="2" class="w-full rounded-xl p-3 text-[10px] text-zinc-400 font-mono mb-2" placeholder="วางโค้ด Backup ที่เคยก๊อปปี้ไว้ที่นี่..."></textarea>
-                <button onclick="importData()" class="w-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-2 rounded-xl transition">กู้คืนข้อมูลเดี๋ยวนี้</button>
-            </div>
-
-            <div class="glass-panel p-6 rounded-3xl space-y-4 border-zinc-800">
-                <h3 class="text-xs font-bold text-white mb-2 uppercase text-center border-b border-zinc-800 pb-2">ผู้ใช้ใหม่ กรอกด้านล่าง</h3>
-                <div>
-                    <label class="text-[10px] font-bold text-zinc-500 uppercase">ชื่อคุณ</label>
-                    <input type="text" id="setupName" class="w-full rounded-xl p-4 text-sm font-bold" placeholder="ชื่อ">
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold text-orange-500 uppercase">เป้าหมายหลัก (เปลี่ยนระบบการซ้อมทั้งหมด)</label>
-                    <select id="setupGoal" class="w-full rounded-xl p-4 text-sm font-bold bg-black border border-zinc-700 text-white">
-                        <option value="weight_loss">เน้นลดน้ำหนัก/สร้างกล้ามเนื้อ (เวทนำ)</option>
-                        <option value="run_10k">นักวิ่งระยะสั้น (Mini Marathon 10K)</option>
-                        <option value="run_21k">นักวิ่งระยะกลาง (Half Marathon 21K)</option>
-                        <option value="run_42k">นักวิ่งทางไกล (Full Marathon 42K)</option>
-                    </select>
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="text-[10px] font-bold text-zinc-500 uppercase">น้ำหนักเริ่ม (KG)</label>
-                        <input type="number" step="0.1" id="setupWt" class="w-full rounded-xl p-4 text-center font-black text-xl" placeholder="00.0">
-                    </div>
-                    <div>
-                        <label class="text-[10px] font-bold text-orange-500 uppercase">เป้าหมาย (KG)</label>
-                        <input type="number" step="0.1" id="setupTg" class="w-full rounded-xl p-4 text-center font-black text-xl text-orange-500" placeholder="00.0">
-                    </div>
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold text-zinc-500 uppercase">ระยะเวลา (เดือน)</label>
-                    <input type="number" id="setupMo" class="w-full rounded-xl p-4 text-center font-bold" placeholder="เช่น 3 หรือ 4">
-                </div>
-            </div>
-
-            <button onclick="checkReality()" class="w-full bg-white text-black hover:bg-zinc-300 font-black py-4 rounded-xl mt-6 uppercase tracking-wider text-sm transition active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.2)]">
-                ให้ A.I. อนุมัติแผน
-            </button>
-        </div>
-
-        <!-- TAB 1: HOME -->
-        <div id="tabHome" class="px-6 slide-up hide mt-4">
-            <div class="glass-panel p-6 rounded-3xl mb-6 relative overflow-hidden border border-orange-500/20">
-                <div class="absolute right-0 top-0 w-32 h-32 bg-orange-600/10 rounded-bl-full blur-2xl"></div>
-                <div class="flex justify-between items-end mb-4 relative z-10">
-                    <div>
-                        <p class="text-[10px] text-zinc-400 font-bold uppercase mb-1">น้ำหนักปัจจุบัน</p>
-                        <p class="text-5xl font-black text-white leading-none"><span id="dashCurrentWt">0.0</span><span class="text-base text-zinc-500 ml-1">KG</span></p>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-[10px] text-zinc-400 font-bold uppercase mb-1">เป้าหมาย: <span id="dashTgWt" class="text-orange-500">0.0</span></p>
-                        <p class="text-[10px] font-bold bg-zinc-900 text-zinc-300 px-2 py-1 rounded border border-zinc-800">เหลือ <span id="dashRemain" class="text-orange-500">0</span> kg</p>
-                    </div>
-                </div>
-                <div class="bg-black/80 p-3 rounded-xl border border-zinc-800 flex justify-between relative z-10 items-center">
-                    <span class="text-[10px] font-bold text-zinc-500 uppercase">Core Goal:</span>
-                    <span id="dashGoalText" class="text-[11px] font-black text-orange-400 uppercase">--</span>
-                </div>
-            </div>
-
-            <h2 class="text-lg font-black text-white uppercase tracking-wide mb-3 flex items-center gap-2"><span>⚠️</span> Daily Directives</h2>
-            <div class="space-y-3">
-                <div class="bg-zinc-900 rounded-3xl p-5 border border-zinc-800 flex gap-4">
-                    <div class="text-2xl">🥩</div>
-                    <div>
-                        <h3 class="text-xs font-black text-white mb-1 uppercase">Nutrition Matrix</h3>
-                        <p class="text-[11px] text-zinc-400 leading-relaxed font-medium">IF 16/8 กินน้ำ 3-4 ลิตร<br><b>โปรตีน:</b> 1.5g/น้ำหนักตัว (วิ่งไกลต้องกินคาร์บเพิ่ม)<br><span class="text-red-400 font-bold">ห้าม:</span> ของทอด, น้ำหวาน, แอลกอฮอล์</p>
-                    </div>
-                </div>
-                
-                <!-- Quick Look Running Schedule -->
-                <div class="bg-blue-900/10 rounded-3xl p-5 border border-blue-900/50 flex gap-4" id="homeRunningCard">
-                    <div class="text-2xl">🏃</div>
-                    <div>
-                        <h3 class="text-xs font-black text-blue-400 mb-1 uppercase">Today's Run Mission</h3>
-                        <p id="dashRunningPlan" class="text-[11px] text-zinc-300 leading-relaxed font-medium font-bold">โหลดข้อมูล...</p>
-                        <button onclick="switchTab('tabPlan', document.querySelectorAll('.nav-item')[1])" class="mt-2 text-[9px] bg-blue-600 text-white px-3 py-1 rounded-full font-bold uppercase">ดูตารางเต็มๆ ที่ Tactical Map</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- TAB 2: TACTICAL MAP (Marathon Integrated) -->
-        <div id="tabPlan" class="px-6 slide-up hide pb-10 mt-4">
-            
-            <!-- MARATHON SPECIFIC HEADER (Only shows if goal is running) -->
-            <div id="runningProtocolHeader" class="bg-blue-950/30 border border-blue-600 rounded-2xl p-5 mb-6 relative overflow-hidden run-pulse hide">
-                <div class="absolute right-0 top-0 opacity-10 text-6xl">🏁</div>
-                <div class="flex justify-between items-center border-b border-blue-900/50 pb-2 mb-3">
-                    <h2 class="text-lg font-black text-white uppercase tracking-widest text-blue-400">Marathon Protocol</h2>
-                    <span class="text-[10px] bg-blue-600 text-white px-2 py-1 rounded font-bold uppercase" id="runDayName">Today</span>
-                </div>
-                <div class="text-center py-2">
-                    <p class="text-[10px] text-blue-300 font-bold uppercase mb-1">ภารกิจวิ่งประจำวันนี้</p>
-                    <p class="text-2xl font-black text-white leading-tight" id="todayRunTask">พักผ่อน หรือ Cross Training</p>
-                    <p class="text-xs text-zinc-400 mt-2 font-medium" id="todayRunDesc">การพักผ่อนคือส่วนหนึ่งของการฝึกซ้อม</p>
-                </div>
-            </div>
-
-            <div class="flex justify-between items-end mb-2">
-                <div>
-                    <h2 class="text-lg font-black text-white mb-1" id="eqTitle">Strength & Cross-Training</h2>
-                    <p class="text-[10px] text-zinc-500 font-bold uppercase tracking-widest leading-tight">สร้างกล้ามเนื้อเสริมแกร่ง (เลือกอุปกรณ์)</p>
-                </div>
-                <div class="bg-zinc-900 border border-orange-900 px-3 py-2 rounded-xl text-center shrink-0">
-                    <p class="text-[8px] text-zinc-500 font-bold uppercase">Difficulty</p>
-                    <p class="text-xs font-black text-orange-500">LV.<span id="mapLevelDisplay">1</span></p>
-                </div>
-            </div>
-
-            <div class="bg-zinc-900/50 p-3 rounded-2xl border border-zinc-800 mb-6 shadow-inner">
-                <div class="eq-grid" id="eqContainer">
-                    <button class="eq-btn selected" data-eq="bodyweight" onclick="toggleEq(this)"><span>ร่างกายเปล่าๆ</span><span class="chk">✅</span></button>
-                    <button class="eq-btn" data-eq="band" onclick="toggleEq(this)"><span>ยางยืด</span><span class="chk hide">✅</span></button>
-                    <button class="eq-btn" data-eq="dumbbell" onclick="toggleEq(this)"><span>ดัมเบล</span><span class="chk hide">✅</span></button>
-                    <button class="eq-btn" data-eq="kettlebell" onclick="toggleEq(this)"><span>เคตเทิลเบล</span><span class="chk hide">✅</span></button>
-                    <button class="eq-btn" data-eq="barbell" onclick="toggleEq(this)"><span>บาร์เบล</span><span class="chk hide">✅</span></button>
-                    <button class="eq-btn" data-eq="pullup" onclick="toggleEq(this)"><span>บาร์โหน</span><span class="chk hide">✅</span></button>
-                    <button class="eq-btn" data-eq="cable" onclick="toggleEq(this)"><span>เคเบิล</span><span class="chk hide">✅</span></button>
-                    <button class="eq-btn" data-eq="smith" onclick="toggleEq(this)"><span>Smith Machine</span><span class="chk hide">✅</span></button>
-                    <button class="eq-btn" data-eq="trx" onclick="toggleEq(this)"><span>TRX</span><span class="chk hide">✅</span></button>
-                    <button class="eq-btn" data-eq="medball" onclick="toggleEq(this)"><span>Med Ball</span><span class="chk hide">✅</span></button>
-                </div>
-            </div>
-
-            <div id="workoutContainer" class="space-y-3">
-                <!-- Auto generated cross-training -->
-            </div>
-        </div>
-
-        <!-- TAB 3: LOG & SYNC -->
-        <div id="tabLog" class="px-6 slide-up hide pb-10 mt-4">
-            <h2 class="text-xl font-black text-white mb-2">Execution Log</h2>
-            <p class="text-[10px] text-zinc-400 font-bold uppercase mb-4 tracking-widest">ส่งรายงานความจริงให้โค้ช A.I.</p>
-
-            <!-- REMINDER FOR MARATHONERS -->
-            <div id="logRunReminder" class="bg-blue-900/20 border border-blue-900 p-3 rounded-xl mb-4 hide">
-                <p class="text-[10px] text-blue-400 font-bold uppercase">🏃 เป้าหมายวันนี้:</p>
-                <p class="text-sm font-black text-white" id="logTargetDistText">วิ่ง Easy 5K</p>
-            </div>
-
-            <div class="glass-panel p-5 rounded-3xl space-y-4 border border-zinc-800">
-                
-                <div class="flex justify-between items-center bg-black p-3 rounded-xl border border-zinc-800">
-                    <label class="text-[10px] font-bold text-zinc-400 uppercase">📅 วันที่บันทึก (ย้อนหลังได้)</label>
-                    <input type="date" id="logDate" onchange="updateRunMissionByDate()" class="bg-transparent text-white font-bold text-xs border-none outline-none focus:ring-0 w-[120px] text-right p-0 m-0">
-                </div>
-
-                <div>
-                    <label class="text-[10px] font-bold text-orange-500 uppercase">* น้ำหนักที่ชั่งเช้านี้ (KG) บังคับ!</label>
-                    <input type="number" step="0.1" id="manWt" class="w-full rounded-xl p-4 text-center font-black text-3xl text-white mt-1 border-none bg-black shadow-inner" placeholder="00.0">
-                </div>
-
-                <div class="pt-2">
-                    <label class="text-[10px] font-bold text-zinc-500 uppercase block mb-1">วันนี้เน้นซ้อมอะไร? (เพื่อเปิด/ปิดช่องวิ่ง)</label>
-                    <div class="mode-toggle">
-                        <button class="mode-btn active" id="btnModeMixed" onclick="setLogMode('mixed')">ทั้งคู่ / วิ่ง</button>
-                        <button class="mode-btn" id="btnModeWeight" onclick="setLogMode('weight')">เล่นเวทอย่างเดียว</button>
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-2 gap-3" id="workoutDataArea">
-                    <div class="bg-black p-4 rounded-2xl border border-blue-900/50" id="distContainer">
-                        <label class="text-[10px] font-bold text-blue-500 uppercase block">ระยะทางวิ่งจริง (KM)</label>
-                        <input type="number" step="0.1" id="manDist" class="w-full text-xl font-bold mt-1 bg-transparent border-none p-0 focus:ring-0 text-white" placeholder="0.0">
-                    </div>
-                    <div class="bg-black p-4 rounded-2xl border border-zinc-800">
-                        <label class="text-[10px] font-bold text-zinc-500 uppercase block">Avg HR (BPM)</label>
-                        <input type="number" id="manHR" class="w-full text-xl font-bold mt-1 bg-transparent border-none p-0 focus:ring-0 text-white" placeholder="0">
-                    </div>
-                </div>
-
-                <div class="pt-2 border-t border-zinc-800 mt-2">
-                    <label class="text-[10px] font-bold text-zinc-400 uppercase block mb-1">โภชนาการ (หลอกคนอื่นได้ แต่หลอกตัวเองไม่ได้)</label>
-                    <div class="bg-black p-3 rounded-xl border border-zinc-800 mb-2">
-                        <label class="text-[9px] font-bold text-zinc-500 uppercase block">แคลอรี่ที่ยัดไปวันนี้ (Kcal)</label>
-                        <input type="number" id="manCal" class="w-full text-lg font-bold mt-1 bg-transparent border-none p-0 focus:ring-0 text-orange-400" placeholder="เช่น 2000">
-                    </div>
-                    <select id="manDiet" class="w-full rounded-xl p-4 text-sm font-bold bg-black border border-zinc-800 text-white">
-                        <option value="perfect">นักบุญ - คุมเป๊ะ 100%</option>
-                        <option value="bad">คนบาป - หลุดกินของอ้วน</option>
-                    </select>
-                </div>
-                
-                <button onclick="processLog()" class="w-full bg-gradient-to-r from-orange-600 to-red-600 text-white font-black py-4 rounded-xl transition-transform active:scale-95 uppercase tracking-widest mt-4 shadow-[0_0_15px_rgba(239,68,68,0.3)]">
-                    ส่งข้อมูลให้ โค้ช A.I.
-                </button>
-            </div>
-        </div>
-
-        <!-- TAB 4: ANALYTICS -->
-        <div id="tabAnalytics" class="px-6 slide-up hide mt-4">
-            <h2 class="text-xl font-black text-white mb-2">A.I. Analytics</h2>
-            <p class="text-[10px] text-zinc-400 font-bold uppercase mb-4 tracking-widest">คำพิพากษาและประวัติศาสตร์ของคุณ</p>
-
-            <div id="aiFeedbackPanel" class="bg-zinc-900 rounded-3xl p-6 border-l-4 border-zinc-700 mb-6 relative overflow-hidden">
-                <div class="flex items-center gap-3 mb-3 border-b border-zinc-800 pb-2">
-                    <span class="text-3xl" id="feedbackEmoji">🤖</span>
-                    <div>
-                        <h3 class="text-xs font-black text-white uppercase tracking-widest">คำวิจารณ์ล่าสุด</h3>
-                    </div>
-                </div>
-                <p id="aiRoastText" class="text-sm text-zinc-300 leading-relaxed font-medium">รอการบันทึกข้อมูล...</p>
-            </div>
-
-            <!-- BACKUP SYSTEM -->
-            <div class="bg-black border border-zinc-800 p-4 rounded-2xl mb-6 flex justify-between items-center">
-                <div>
-                    <h3 class="text-[10px] font-bold text-zinc-300 uppercase">💾 ป้องกันข้อมูลหาย</h3>
-                    <p class="text-[9px] text-zinc-500">ก๊อปปี้โค้ดไปเก็บไว้ใน Note เครื่องคุณ</p>
-                </div>
-                <button onclick="exportData()" class="bg-zinc-800 hover:bg-zinc-700 text-white text-[10px] font-bold py-2 px-3 rounded-lg border border-zinc-700">ก๊อปปี้ Backup</button>
-            </div>
-
-            <div class="flex justify-between items-end mb-3">
-                <h3 class="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Log History</h3>
-                <div class="w-8 h-8 rounded-full bg-red-950 border border-red-900 flex items-center justify-center text-xs cursor-pointer hover:bg-red-900 transition" onclick="resetApp()" title="ล้างข้อมูลทั้งหมด">🗑️</div>
-            </div>
-
-            <div id="historyList" class="space-y-3 pb-10"></div>
-        </div>
-
-        <!-- BOTTOM NAV -->
-        <nav id="bottomNav" class="bottom-nav hide">
-            <button onclick="switchTab('tabHome', this)" class="nav-item active"><span class="icon">🏠</span><span>Home</span></button>
-            <button onclick="switchTab('tabPlan', this)" class="nav-item"><span class="icon">📋</span><span>Map</span></button>
-            <button onclick="switchTab('tabLog', this)" class="nav-item"><span class="icon">⚡</span><span>Log</span></button>
-            <button onclick="switchTab('tabAnalytics', this)" class="nav-item"><span class="icon">📊</span><span>A.I.</span></button>
-        </nav>
-
-    </div>
-
-    <script>
-        function showToast(msg, type = 'error') {
-            const toast = document.getElementById('toast');
-            toast.innerText = msg;
-            toast.className = type + ' show'; 
-            setTimeout(() => { toast.classList.remove('show'); }, 4000);
+        :root {
+            --bg: #060608;
+            --surface: #0d0d12;
+            --surface2: #141420;
+            --border: rgba(255,255,255,0.06);
+            --border-strong: rgba(255,255,255,0.12);
+            --orange: #ff6b2b;
+            --orange-glow: rgba(255,107,43,0.15);
+            --blue: #3b82f6;
+            --blue-dim: rgba(59,130,246,0.1);
+            --green: #22c55e;
+            --red: #ef4444;
+            --text-1: #f4f4f5;
+            --text-2: #a1a1aa;
+            --text-3: #52525b;
+            --gold: #f59e0b;
         }
-
-        const STORE_KEY = 'GooJaLakV14';
-        let state = {
-            isSetup: false, name: "", startWt: 0, targetWt: 0, months: 0, goal: 'weight_loss',
-            selectedEq: ['bodyweight'], history: [], userLevel: 1
-        };
-
-        const GOAL_DICT = {
-            'weight_loss': 'ลดไขมัน / ลดน้ำหนัก', 'run_10k': 'ลดน้ำหนัก + Mini 10K', 'run_21k': 'ลดน้ำหนัก + Half 21K', 'run_42k': 'ลดน้ำหนัก + Full 42K'
-        };
-
-        // --- WEEKLY RUNNING SCHEDULES (0 = Sunday, 1 = Monday ...) ---
-        const DAYS_TH = ['วันอาทิตย์ (Sunday)', 'วันจันทร์ (Monday)', 'วันอังคาร (Tuesday)', 'วันพุธ (Wednesday)', 'วันพฤหัสบดี (Thursday)', 'วันศุกร์ (Friday)', 'วันเสาร์ (Saturday)'];
-        
-        const RUNNING_PLANS = {
-            'run_10k': [
-                { title: 'Long Run 8-10K', desc: 'วิ่งช้าๆ โซน 2 ห้ามเดินถ้าไม่จำเป็น สร้างความอึด', target: 8 }, // 0 Sun
-                { title: 'Rest or Cross Train', desc: 'พักผ่อน หรือเล่นเวทเบาๆ ให้กล้ามเนื้อฟื้นฟู', target: 0 }, // 1 Mon
-                { title: 'Intervals (ความเร็ว)', desc: 'วิ่งเร็ว 400m สลับจ๊อก 200m ทำ 6 รอบ', target: 4 }, // 2 Tue
-                { title: 'Easy Run 3-5K', desc: 'วิ่งสบายๆ ผ่อนคลายกล้ามเนื้อ', target: 3 }, // 3 Wed
-                { title: 'Tempo 5K', desc: 'วิ่งความเร็วเหนื่อยหอบนิดๆ (โซน 3) ต่อเนื่อง 5 โล', target: 5 }, // 4 Thu
-                { title: 'Active Rest / Core', desc: 'พัก หรือ เล่นหน้าท้อง/แพลงก์ อย่างเดียว', target: 0 }, // 5 Fri
-                { title: 'Easy Run 3K', desc: 'วิ่งจ๊อกกิ้งเบาๆ ขยับขาเตรียมพร้อมวันพรุ่งนี้', target: 3 }  // 6 Sat
-            ],
-            'run_21k': [
-                { title: 'LONG RUN 15-18K', desc: 'บททดสอบจิตใจ! คุมเพซให้คงที่ ซ้อมกินเจลและน้ำ', target: 15 }, // 0 Sun
-                { title: 'Rest or Cross Train', desc: 'พักผ่อนเต็มที่ ร่างกายต้องการการซ่อมแซม', target: 0 }, // 1 Mon
-                { title: 'Speed Intervals', desc: 'วิ่งเร็ว 800m สลับจ๊อก 400m ทำ 6 รอบ (ห้ามอู้)', target: 7 }, // 2 Tue
-                { title: 'Recovery Run 6K', desc: 'วิ่งโคตรช้า โซน 1-2 สลัดความเมื่อยล้า', target: 6 }, // 3 Wed
-                { title: 'Tempo Run 8K', desc: 'วอร์ม 2K -> วิ่งความเร็วแข่ง 6K -> คูลดาวน์ 2K', target: 8 }, // 4 Thu
-                { title: 'Rest / Core Strength', desc: 'เวทเทรนนิ่งช่วงล่างและแกนกลางลำตัว', target: 0 }, // 5 Fri
-                { title: 'Easy Run 5K + Strides', desc: 'วิ่งเบาๆ 5K ตบท้ายด้วยวิ่งสปริ้นท์ 100m 4 รอบ', target: 5 } // 6 Sat
-            ],
-            'run_42k': [
-                { title: 'THE LONG RUN 25-32K', desc: 'นรกของจริง! วิ่งเพซมาราธอน ซ้อมแผนโภชนาการ ห้ามยอมแพ้!', target: 25 }, // 0 Sun
-                { title: 'Complete Rest', desc: 'นอนโง่ๆ บนเตียง วันนี้ห้ามใช้ขาเด็ดขาด!', target: 0 }, // 1 Mon
-                { title: 'Yasso 800s / Speed', desc: 'วิ่งเร็ว 800m x 8 รอบ พัก 3 นาทีระหว่างรอบ', target: 8 }, // 2 Tue
-                { title: 'Mid-Long Run 10-12K', desc: 'วิ่งโซน 2 สะสมระยะทาง สร้างฐานความอึด', target: 10 }, // 3 Wed
-                { title: 'Marathon Tempo 12K', desc: 'วิ่งเพซเร็วกว่าเป้าหมายมาราธอนนิดหน่อย ต่อเนื่อง 12 โล', target: 12 }, // 4 Thu
-                { title: 'Rest or Cross Train', desc: 'เล่นเวทเทรนนิ่งสร้างความแข็งแรงช่วงล่างและหน้าท้อง', target: 0 }, // 5 Fri
-                { title: 'Easy Run 6-8K', desc: 'วิ่งเบาที่สุดเพื่อขยับข้อต่อ เตรียมตัวรับนรกวันพรุ่งนี้', target: 6 } // 6 Sat
-            ]
-        };
-
-        // --- EXERCISE DATABASE (Same as V13) ---
-        const EXERCISES = {
-            bodyweight: [
-                { n: 'Jumping Jacks', s: 1, r: '60s', rest: 15, t: 'Fast', rpe: 6, eqName: 'Bodyweight', img: 'กระโดดตบ' },
-                { n: 'Air Squats', s: 3, r: 15, rest: 45, t: '3-0-1-0', rpe: 7, eqName: 'Bodyweight', img: 'สควอท' },
-                { n: 'Push-ups', s: 3, r: 10, rest: 60, t: '2-1-1-0', rpe: 8, eqName: 'Bodyweight', img: 'วิดพื้น' },
-                { n: 'Plank', s: 3, r: '45s', rest: 30, t: 'Hold', rpe: 8, eqName: 'Bodyweight', img: 'แพลงก์' },
-                { n: 'Burpees', s: 3, r: 10, rest: 60, t: 'Explosive', rpe: 9, eqName: 'Bodyweight', img: 'พุ่งหลัง' },
-                { n: 'Lunges', s: 3, r: '10/Leg', rest: 45, t: '2-1-1-0', rpe: 7, eqName: 'Bodyweight', img: 'ก้าวขา' }
-            ],
-            band: [
-                { n: 'Band Pull-Aparts', s: 3, r: 15, rest: 45, t: '2-1-2-1', rpe: 7, eqName: 'Band', img: 'ดึงยาง' },
-                { n: 'Banded Squat', s: 3, r: 12, rest: 60, t: '3-1-1-0', rpe: 8, eqName: 'Band', img: 'สควอทยาง' },
-                { n: 'Band Chest Press', s: 3, r: 12, rest: 45, t: '2-1-1-0', rpe: 7, eqName: 'Band', img: 'ดันอกยาง' },
-                { n: 'Band Deadlift', s: 3, r: 15, rest: 60, t: '2-0-1-1', rpe: 8, eqName: 'Band', img: 'เดดลิฟต์ยาง' }
-            ],
-            dumbbell: [
-                { n: 'DB Goblet Squat', s: 3, r: 10, rest: 60, t: '3-1-1-0', rpe: 8, eqName: 'Dumbbell', img: 'DB Squat' },
-                { n: 'DB Bench Press', s: 3, r: 10, rest: 90, t: '2-0-1-1', rpe: 8, eqName: 'Dumbbell', img: 'DB Press' },
-                { n: 'DB Rows', s: 3, r: 12, rest: 60, t: '2-1-1-1', rpe: 8, eqName: 'Dumbbell', img: 'DB Row' },
-                { n: 'DB Overhead Press', s: 3, r: 10, rest: 60, t: '2-0-1-0', rpe: 8, eqName: 'Dumbbell', img: 'DB OHP' },
-                { n: 'DB Lunges', s: 3, r: '10/Leg', rest: 60, t: '2-1-1-0', rpe: 8, eqName: 'Dumbbell', img: 'DB Lunge' }
-            ],
-            kettlebell: [
-                { n: 'KB Swings', s: 4, r: 15, rest: 60, t: 'Explosive', rpe: 8, eqName: 'Kettlebell', img: 'KB Swing' },
-                { n: 'KB Russian Twist', s: 3, r: 16, rest: 45, t: '1-0-1-0', rpe: 7, eqName: 'Kettlebell', img: 'KB Twist' },
-                { n: 'KB Goblet Squat', s: 3, r: 12, rest: 60, t: '3-1-1-0', rpe: 8, eqName: 'Kettlebell', img: 'KB Squat' }
-            ],
-            barbell: [
-                { n: 'Barbell Back Squat', s: 3, r: 8, rest: 120, t: '3-1-1-0', rpe: 8, eqName: 'Barbell', img: 'BB Squat' },
-                { n: 'Barbell Deadlift', s: 3, r: 6, rest: 120, t: 'Hold tension', rpe: 9, eqName: 'Barbell', img: 'BB Deadlift' },
-                { n: 'Barbell Bench Press', s: 3, r: 8, rest: 120, t: '2-0-1-0', rpe: 8, eqName: 'Barbell', img: 'BB Bench' }
-            ],
-            cable: [
-                { n: 'Cable Tricep Pushdown', s: 3, r: 12, rest: 45, t: '2-0-1-1', rpe: 7, eqName: 'Cable', img: 'Cable Push' },
-                { n: 'Cable Woodchopper', s: 3, r: 12, rest: 45, t: '1-1-1-0', rpe: 7, eqName: 'Cable', img: 'Woodchop' }
-            ],
-            smith: [{ n: 'Smith Machine Lunges', s: 3, r: 10, rest: 60, t: '3-0-1-0', rpe: 8, eqName: 'Smith', img: 'Smith Lunge' }],
-            trx: [{ n: 'TRX Inverted Row', s: 3, r: 12, rest: 60, t: '2-1-2-0', rpe: 8, eqName: 'TRX', img: 'TRX Row' }],
-            medball: [{ n: 'Med Ball Slams', s: 3, r: 12, rest: 45, t: 'Explosive', rpe: 9, eqName: 'MedBall', img: 'Ball Slam' }],
-            pullup: [{ n: 'Strict Pull-ups', s: 3, r: 'Max', rest: 120, t: '1-0-1-1', rpe: 9, eqName: 'Pull Bar', img: 'ดึงข้อ' }]
-        };
-
-        function exportData() {
-            if(!state.isSetup) return showToast('ยังไม่มีข้อมูลให้ Backup', 'error');
-            const dataStr = btoa(JSON.stringify(state));
-            navigator.clipboard.writeText(dataStr).then(() => {
-                showToast('✅ ก๊อปปี้โค้ด Backup แล้ว! เอาไปวางใน Note', 'success');
-            }).catch(err => {
-                const textArea = document.createElement("textarea"); textArea.value = dataStr;
-                document.body.appendChild(textArea); textArea.select(); document.execCommand("copy"); document.body.removeChild(textArea);
-                showToast('✅ ก๊อปปี้โค้ด Backup แล้ว!', 'success');
-            });
-        }
-
-        function importData() {
-            const raw = document.getElementById('importDataArea').value.trim();
-            if(!raw) return showToast('ใส่โค้ด Backup ก่อนสิวะ!', 'error');
-            try {
-                const parsed = JSON.parse(atob(raw));
-                if(parsed.isSetup && parsed.name) {
-                    state = parsed; localStorage.setItem(STORE_KEY, JSON.stringify(state));
-                    document.getElementById('setupScreen').classList.add('hide');
-                    showToast('🎉 กู้ข้อมูลสำเร็จ!', 'success'); bootDashboard();
-                } else throw new Error("Invalid format");
-            } catch(e) { showToast('❌ โค้ดมั่วหรือพัง! กู้ไม่ได้', 'error'); }
-        }
-
-        function setTodayDateSafe() {
-            try {
-                const now = new Date();
-                const y = now.getFullYear(); const m = String(now.getMonth() + 1).padStart(2, '0'); const d = String(now.getDate()).padStart(2, '0');
-                document.getElementById('logDate').value = `${y}-${m}-${d}`;
-            } catch(e) {}
-        }
-
-        function initApp() {
-            setTodayDateSafe();
-            const saved = localStorage.getItem(STORE_KEY);
-            if (saved) {
-                try {
-                    state = JSON.parse(saved);
-                    if(!state.userLevel) state.userLevel = Math.floor(state.history.length / 2) + 1;
-                    if (state.isSetup) { bootDashboard(); return; }
-                } catch(e) { console.log('Data corrupt.'); }
-            }
-            document.getElementById('setupScreen').classList.remove('hide');
-        }
-
-        function checkReality() {
-            const n = document.getElementById('setupName').value;
-            const w = parseFloat(document.getElementById('setupWt').value);
-            const t = parseFloat(document.getElementById('setupTg').value);
-            const m = parseInt(document.getElementById('setupMo').value);
-            const goal = document.getElementById('setupGoal').value;
-
-            if (!n || !w || !t || !m) return showToast('กรอกให้ครบ! อยากผอมแต่ขี้เกียจพิมพ์?', 'error');
-            if (w <= t) return showToast('น้ำหนักเริ่มน้อยกว่าเป้า? บ้าไปแล้ว!', 'error');
-
-            const lossPerMonth = (w - t) / m;
-            if (lossPerMonth > 5) return showToast(`AI: ลดเดือนละ ${lossPerMonth.toFixed(1)} กิโล? เพ้อฝันไปแก้ใหม่!`, 'error');
-
-            state.name = n; state.startWt = w; state.targetWt = t; state.months = m; state.goal = goal;
-            state.isSetup = true; state.userLevel = 1;
-            
-            localStorage.setItem(STORE_KEY, JSON.stringify(state));
-            
-            document.getElementById('setupScreen').classList.add('hide');
-            bootDashboard();
-            showToast('บันทึกเป้าหมายสำเร็จ! ลุย!', 'success');
-        }
-
-        // --- GET RUN MISSION FOR A SPECIFIC DATE ---
-        function getRunMission(dateObj) {
-            if (!state.goal.startsWith('run_')) return null;
-            const dayIdx = dateObj.getDay(); // 0-6
-            return RUNNING_PLANS[state.goal][dayIdx];
-        }
-
-        function bootDashboard() {
-            document.getElementById('bottomNav').classList.remove('hide');
-            document.getElementById('tabHome').classList.remove('hide');
-            document.getElementById('headerLevelBox').classList.remove('hide');
-            
-            document.getElementById('headerLevel').innerText = `LV.${state.userLevel}`;
-            document.getElementById('mapLevelDisplay').innerText = state.userLevel;
-
-            const curWt = state.history.length > 0 ? state.history[state.history.length-1].weight : state.startWt;
-            document.getElementById('dashCurrentWt').innerText = curWt.toFixed(1);
-            document.getElementById('dashTgWt').innerText = state.targetWt;
-            document.getElementById('dashRemain').innerText = (curWt - state.targetWt).toFixed(1);
-            document.getElementById('dashGoalText').innerText = GOAL_DICT[state.goal];
-
-            // Setup Home Running Directive
-            if (state.goal.startsWith('run_')) {
-                document.getElementById('homeRunningCard').classList.remove('hide');
-                const todayMission = getRunMission(new Date());
-                document.getElementById('dashRunningPlan').innerHTML = `<span class="text-white text-sm block mb-1">${todayMission.title}</span> ${todayMission.desc}`;
-                
-                // Show protocol in Map tab
-                document.getElementById('runningProtocolHeader').classList.remove('hide');
-                document.getElementById('runDayName').innerText = DAYS_TH[new Date().getDay()];
-                document.getElementById('todayRunTask').innerText = todayMission.title;
-                document.getElementById('todayRunDesc').innerText = todayMission.desc;
-                document.getElementById('eqTitle').innerText = "Cross-Training (เสริมกล้ามเนื้อ)";
-                
-                // Update Log Reminder
-                updateRunMissionByDate();
-            } else {
-                document.getElementById('homeRunningCard').classList.add('hide');
-                document.getElementById('runningProtocolHeader').classList.add('hide');
-                document.getElementById('logRunReminder').classList.add('hide');
-                document.getElementById('eqTitle').innerText = "Tactical Strength Training";
-            }
-
-            if(state.selectedEq && state.selectedEq.length > 0) {
-                document.querySelectorAll('.eq-btn').forEach(btn => {
-                    const eq = btn.getAttribute('data-eq');
-                    if(state.selectedEq.includes(eq)) {
-                        btn.classList.add('selected'); btn.querySelector('.chk').classList.remove('hide');
-                    } else {
-                        btn.classList.remove('selected'); btn.querySelector('.chk').classList.add('hide');
-                    }
-                });
-            }
-            generateWorkout(); 
-            renderHistory();
-        }
-
-        function updateRunMissionByDate() {
-            if (!state.goal.startsWith('run_')) return;
-            const logDateVal = document.getElementById('logDate').value;
-            if(!logDateVal) return;
-            
-            const d = new Date(logDateVal);
-            const mission = getRunMission(d);
-            
-            if(mission && mission.target > 0) {
-                document.getElementById('logRunReminder').classList.remove('hide');
-                document.getElementById('logTargetDistText').innerText = `${mission.title} (เป้าหมาย: ${mission.target} KM)`;
-            } else {
-                document.getElementById('logRunReminder').classList.remove('hide');
-                document.getElementById('logTargetDistText').innerText = `พักผ่อน / Cross Training (ไม่ต้องวิ่ง)`;
-            }
-        }
-
-        function switchTab(tabId, btnElem) {
-            ['tabHome', 'tabPlan', 'tabLog', 'tabAnalytics'].forEach(id => document.getElementById(id).classList.add('hide'));
-            document.getElementById(tabId).classList.remove('hide');
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            if(btnElem) btnElem.classList.add('active');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            
-            if(tabId === 'tabLog') updateRunMissionByDate();
-        }
-
-        function toggleEq(btn) {
-            const eq = btn.getAttribute('data-eq');
-            const idx = state.selectedEq.indexOf(eq);
-            
-            if(idx > -1) {
-                if(state.selectedEq.length === 1) return showToast('ต้องมีอุปกรณ์อย่างน้อย 1 อย่าง', 'error');
-                state.selectedEq.splice(idx, 1);
-                btn.classList.remove('selected'); btn.querySelector('.chk').classList.add('hide');
-            } else {
-                state.selectedEq.push(eq);
-                btn.classList.add('selected'); btn.querySelector('.chk').classList.remove('hide');
-            }
-            localStorage.setItem(STORE_KEY, JSON.stringify(state));
-            generateWorkout(); 
-        }
-
-        function generateWorkout() {
-            const container = document.getElementById('workoutContainer');
-            container.innerHTML = '';
-            
-            let availableEx = [];
-            state.selectedEq.forEach(eq => { if(EXERCISES[eq]) availableEx.push(...EXERCISES[eq]); });
-            if(availableEx.length === 0) availableEx = [...EXERCISES['bodyweight']];
-
-            availableEx = availableEx.sort(() => 0.5 - Math.random());
-            
-            // If running goal, only generate 3 cross-training exercises. If weight loss, generate 5.
-            const numEx = state.goal.startsWith('run_') ? 3 : 5;
-            
-            let routine = [];
-            for(let i = 0; i < numEx; i++) { routine.push(availableEx[i % availableEx.length]); }
-
-            const headerHTML = `
-                <div class="bg-zinc-900 p-4 rounded-xl border border-orange-900/50 mb-3 shadow-[0_0_15px_rgba(249,115,22,0.1)]">
-                    <h3 class="text-orange-500 font-black text-xs uppercase flex justify-between"><span>🔥 A.I. Overload LV.${state.userLevel}</span></h3>
-                    <p class="text-[10px] text-zinc-400 mt-1">ท่าจากอุปกรณ์ล้วนๆ ${state.goal.startsWith('run_') ? '(คัดมา 3 ท่าเพื่อป้องกันล้าก่อนวันวิ่ง)' : ''}</p>
-                </div>
-            `;
-            container.innerHTML += headerHTML;
-
-            routine.forEach((ex, idx) => {
-                if(!ex) return;
-                let finalSets = typeof ex.s === 'number' ? ex.s + Math.floor((state.userLevel - 1) / 3) : ex.s;
-                let finalReps = typeof ex.r === 'number' ? ex.r + (state.userLevel - 1) : ex.r;
-                let finalRest = typeof ex.rest === 'number' ? Math.max(10, ex.rest - ((state.userLevel - 1) * 2)) : ex.rest;
-                let finalRpe = typeof ex.rpe === 'number' ? Math.min(10, ex.rpe + (state.userLevel * 0.1)).toFixed(1) : ex.rpe;
-                const restStr = typeof finalRest === 'number' ? finalRest + 's' : finalRest;
-
-                const html = `
-                    <div class="bg-black p-4 rounded-2xl border border-zinc-800">
-                        <div class="flex justify-between items-start mb-2 border-b border-zinc-900 pb-2">
-                            <h4 class="text-sm font-black text-white flex items-center gap-1">
-                                <span class="text-orange-500">${idx+1}.</span> ${ex.n}
-                            </h4>
-                            <span class="eq-tag">${ex.eqName}</span>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2 text-[10px]">
-                            <div class="bg-zinc-900 p-2 rounded border border-zinc-800/50"><span class="text-zinc-500 font-bold">SET:</span> <span class="text-white font-black">${finalSets} x ${finalReps}</span></div>
-                            <div class="bg-zinc-900 p-2 rounded border border-zinc-800/50"><span class="text-zinc-500 font-bold">REST:</span> <span class="text-orange-400 font-black">${restStr}</span></div>
-                        </div>
-                    </div>
-                `;
-                container.innerHTML += html;
-            });
-        }
-
-        function setLogMode(mode) {
-            document.getElementById('btnModeMixed').classList.remove('active');
-            document.getElementById('btnModeWeight').classList.remove('active');
-            
-            if(mode === 'weight') {
-                document.getElementById('btnModeWeight').classList.add('active');
-                document.getElementById('distContainer').classList.add('hide');
-                document.getElementById('manDist').value = ''; 
-            } else {
-                document.getElementById('btnModeMixed').classList.add('active');
-                document.getElementById('distContainer').classList.remove('hide');
-            }
-        }
-
-        function processLog() {
-            let rawDate = document.getElementById('logDate').value;
-            if (!rawDate) {
-                const now = new Date();
-                rawDate = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-            }
-            
-            const wt = parseFloat(document.getElementById('manWt').value);
-            const dist = parseFloat(document.getElementById('manDist').value) || 0;
-            const hr = parseInt(document.getElementById('manHR').value) || 0;
-            const cals = parseInt(document.getElementById('manCal').value) || 0;
-            const diet = document.getElementById('manDiet').value;
-
-            if(isNaN(wt) || wt <= 0) return showToast('A.I.: น้ำหนักมึงล่ะ? ไม่ชั่งแล้วจะมาบันทึกเพื่อ?!', 'error');
-
-            let dObj = new Date(rawDate);
-            if(isNaN(dObj.getTime())) dObj = new Date(); 
-            const dateStr = `${dObj.getDate().toString().padStart(2,'0')}/${(dObj.getMonth()+1).toString().padStart(2,'0')}/${dObj.getFullYear()}`;
-
-            let prevWt = state.startWt;
-            if(state.history.length > 0) prevWt = state.history[state.history.length-1].weight;
-
-            let roast = "", color = "", emoji = "🤖";
-
-            // BRUTAL MARATHON ROAST LOGIC
-            if (state.goal.startsWith('run_')) {
-                const mission = getRunMission(dObj);
-                if (mission.target > 0) {
-                    if (dist === 0) {
-                        roast += `<p class="text-red-500 font-black mb-2">วันซ้อมแต่มึงเสือกหยุด! มาราธอนเขาไม่แจกเหรียญให้คนขี้เกียจนะโว้ย!</p>`;
-                        color = "border-red-600"; emoji = "🤬";
-                    } else if (dist < mission.target * 0.7) {
-                        roast += `<p class="text-orange-400 mb-2">เป้าหมายคือ ${mission.target}K แต่มึงวิ่งแค่ ${dist}K? ใจหมามาก! วันแข่งมึงลากขาเข้าเส้นชัยแน่!</p>`;
-                    } else if (dist >= mission.target) {
-                        roast += `<p class="text-blue-400 mb-2 font-bold">ยอดเยี่ยม! เก็บระยะได้ตามแผน วินัยแบบนี้แหละที่จะพามึงจบมาราธอน!</p>`;
-                    }
-                } else if (mission.target === 0 && dist > 3) {
-                    roast += `<p class="text-orange-400 mb-2">วันนี้ตารางให้พัก มึงจะบ้าพลังไปวิ่งทำไม?! กล้ามเนื้อไม่ฟื้นฟูเดี๋ยวก็พังหรอก ไอ้งั่ง!</p>`;
-                }
-            }
-
-            if (cals > 3000) {
-                roast += `<p class="text-red-400 mb-2">ยัดไป ${cals} แคล? ถ้าไม่ได้วิ่ง Long run มา 30 โล มึงกำลังขุนตัวเองเป็นหมู!</p>`;
-            }
-
-            if (hr > 175) roast += `<p class="text-rose-400 mb-2"><b>HR ${hr} โคตรสูง!</b> ลดเพซลงมา! อยากหัวใจวายตายก่อนเข้าเส้นชัยรึไง!</p>`;
-
-            if (wt > prevWt) {
-                if (diet === 'perfect' && cals < 2000) roast += `<p>คุมเป๊ะแต่น้ำหนักขึ้น? มึงแอบแดกดึกชัวร์!</p>`;
-                else roast += `<p><b>น้ำหนักเด้ง!</b> รู้อยู่ว่าแดกห่วย สมควร!</p>`;
-                if(!color) { color = "border-red-500"; emoji = "📉"; }
-            } else if (wt < prevWt) {
-                roast += `<p>น้ำหนักลง! รักษาความต่อเนื่องไว้!</p>`;
-                if(!color) { color = "border-green-500"; emoji = "🔥"; }
-            } else {
-                roast += `<p>น้ำหนักนิ่ง... พรุ่งนี้ซ้อมให้ถึง!</p>`;
-                if(!color) { color = "border-yellow-500"; emoji = "⚠️"; }
-            }
-
-            const newLog = {
-                dateRaw: dObj.getTime(), dateStr: dateStr,
-                weight: wt, dist: dist, hr: hr, diet: diet, cals: cals,
-                feedback: roast, color: color, emoji: emoji
-            };
-            
-            state.history.push(newLog);
-            state.history.sort((a,b) => a.dateRaw - b.dateRaw); 
-
-            let oldLevel = state.userLevel;
-            state.userLevel = Math.floor(state.history.length / 2) + 1;
-            
-            localStorage.setItem(STORE_KEY, JSON.stringify(state));
-
-            document.getElementById('manWt').value = '';
-            document.getElementById('manDist').value = '';
-            document.getElementById('manHR').value = '';
-            document.getElementById('manCal').value = '';
-
-            if (state.userLevel > oldLevel) showToast(`🔥 LEVEL UP! เป็นเลเวล ${state.userLevel} แล้ว!`, 'levelup');
-            else showToast('บันทึกข้อมูลสำเร็จ!', 'success');
-
-            bootDashboard(); 
-            switchTab('tabAnalytics', document.querySelectorAll('.nav-item')[3]);
-        }
-
-        function renderHistory() {
-            const list = document.getElementById('historyList');
-            if (state.history.length === 0) return;
-
-            const last = state.history[state.history.length - 1];
-            const p = document.getElementById('aiFeedbackPanel');
-            p.className = `bg-zinc-900 rounded-3xl p-6 border-l-4 mb-6 relative overflow-hidden ${last.color}`;
-            document.getElementById('feedbackEmoji').innerText = last.emoji;
-            document.getElementById('aiRoastText').innerHTML = last.feedback;
-
-            list.innerHTML = '';
-            for (let i = state.history.length - 1; i >= 0; i--) {
-                const log = state.history[i];
-                const diff = (log.weight - state.startWt).toFixed(1);
-                const diffStr = diff > 0 ? `+${diff}` : diff;
-                const wtColor = diff <= 0 ? 'text-green-500' : 'text-red-500';
-
-                const html = `
-                    <div class="bg-black p-4 rounded-2xl border border-zinc-800 flex justify-between items-center">
-                        <div>
-                            <div class="text-xs font-bold text-zinc-400">${log.dateStr}</div>
-                            <div class="text-[9px] mt-1 text-zinc-500 font-bold flex flex-wrap gap-1">
-                                ${log.cals>0 ? `<span class="bg-orange-900/40 text-orange-400 px-1 rounded">🍔 ${log.cals}kcal</span>` : ''} 
-                                ${log.dist>0 ? `<span class="bg-blue-900/40 text-blue-400 px-1 rounded">🏃 ${log.dist}km</span>` : ''} 
-                                ${log.hr>0 ? `<span class="bg-rose-900/40 text-rose-400 px-1 rounded">❤️ ${log.hr}bpm</span>` : ''}
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <span class="text-2xl font-black text-white">${log.weight.toFixed(1)}</span>
-                            <span class="text-[10px] font-bold ${wtColor} block leading-none">${diffStr}kg</span>
-                        </div>
-                    </div>
-                `;
-                list.innerHTML += html;
-            }
-        }
-
-        function resetApp() {
-            if(confirm('A.I.: จะลบข้อมูลแล้วยอมแพ้ใช่ไหม ไอ้คนอ่อนแอ?')) {
-                localStorage.removeItem(STORE_KEY);
-                location.reload();
-            }
-        }
-
-        initApp();
-    </script>
-</body>
-</html>
 
 ```
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+        font-family: 'Sarabun', sans-serif;
+        background: var(--bg);
+        color: var(--text-1);
+        overflow-x: hidden;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    .app {
+        max-width: 430px;
+        margin: 0 auto;
+        min-height: 100vh;
+        position: relative;
+        padding-bottom: 90px;
+        background: var(--bg);
+    }
+
+    /* Noise texture overlay */
+    .app::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        max-width: 430px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+        pointer-events: none;
+        z-index: 0;
+        opacity: 0.4;
+    }
+
+    .hide { display: none !important; }
+
+    /* ─── HEADER ─── */
+    .header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: rgba(6,6,8,0.9);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border-bottom: 1px solid var(--border);
+        padding: 16px 20px 14px;
+    }
+
+    .header-logo {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 28px;
+        letter-spacing: 2px;
+        background: linear-gradient(135deg, #ff6b2b 0%, #ff3d6b 50%, #c026d3 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        line-height: 1;
+    }
+
+    .header-sub {
+        font-size: 9px;
+        color: var(--blue);
+        letter-spacing: 4px;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-top: 3px;
+    }
+
+    .level-pill {
+        background: linear-gradient(135deg, rgba(255,107,43,0.15), rgba(255,61,107,0.1));
+        border: 1px solid rgba(255,107,43,0.3);
+        border-radius: 50px;
+        padding: 6px 14px;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--orange);
+        font-family: 'Bebas Neue', sans-serif;
+        letter-spacing: 2px;
+        font-size: 14px;
+    }
+
+    .xp-mini {
+        font-size: 8px;
+        color: var(--text-3);
+        font-weight: 600;
+        letter-spacing: 1px;
+        text-align: center;
+        margin-top: 2px;
+    }
+
+    /* ─── TABS ─── */
+    .tab-content { padding: 20px; position: relative; z-index: 1; }
+
+    /* ─── CARDS ─── */
+    .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 20px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .card-glow-orange::after {
+        content: '';
+        position: absolute;
+        top: -40px; right: -40px;
+        width: 120px; height: 120px;
+        background: radial-gradient(circle, var(--orange-glow) 0%, transparent 70%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .card-glow-blue::after {
+        content: '';
+        position: absolute;
+        top: -40px; right: -40px;
+        width: 120px; height: 120px;
+        background: radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 70%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    /* ─── STATS GRID ─── */
+    .stat-box {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 12px 14px;
+        text-align: center;
+    }
+
+    .stat-label {
+        font-size: 8px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: var(--text-3);
+    }
+
+    .stat-val {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 28px;
+        line-height: 1;
+        margin-top: 4px;
+    }
+
+    .stat-unit {
+        font-size: 10px;
+        font-weight: 600;
+        color: var(--text-2);
+        margin-left: 2px;
+    }
+
+    /* ─── PROGRESS BAR ─── */
+    .progress-track {
+        background: var(--surface2);
+        border-radius: 100px;
+        height: 6px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        border-radius: 100px;
+        background: linear-gradient(90deg, var(--orange), #ff3d6b);
+        transition: width 1s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    /* ─── XP BAR ─── */
+    .xp-bar-wrap {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 50px;
+        padding: 3px;
+        margin-top: 6px;
+    }
+
+    .xp-bar-fill {
+        height: 8px;
+        border-radius: 50px;
+        background: linear-gradient(90deg, #f59e0b, #ef4444, #ff6b2b);
+        background-size: 200% 100%;
+        animation: shimmer 2s linear infinite;
+        transition: width 1.2s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    @keyframes shimmer {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+
+    /* ─── BOTTOM NAV ─── */
+    .bottom-nav {
+        position: fixed;
+        bottom: 0;
+        max-width: 430px;
+        width: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(6,6,8,0.95);
+        backdrop-filter: blur(30px);
+        -webkit-backdrop-filter: blur(30px);
+        border-top: 1px solid var(--border);
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        padding: 10px 0 24px;
+        z-index: 200;
+    }
+
+    .nav-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        width: 25%;
+        cursor: pointer;
+        position: relative;
+        padding: 6px 0;
+        color: var(--text-3);
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        transition: color 0.2s;
+        background: none;
+        border: none;
+    }
+
+    .nav-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 17px;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .nav-btn.active {
+        color: var(--orange);
+    }
+
+    .nav-btn.active .nav-icon {
+        background: var(--orange-glow);
+        transform: scale(1.15) translateY(-2px);
+    }
+
+    .nav-dot {
+        position: absolute;
+        top: 4px; right: 50%;
+        transform: translateX(14px);
+        width: 5px; height: 5px;
+        border-radius: 50%;
+        background: var(--orange);
+        display: none;
+    }
+
+    .nav-btn.active .nav-dot { display: block; }
+
+    /* ─── TOAST ─── */
+    #toast {
+        position: fixed;
+        top: 80px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-20px);
+        background: var(--surface);
+        color: var(--text-1);
+        padding: 12px 20px;
+        border-radius: 50px;
+        font-size: 12px;
+        font-weight: 700;
+        z-index: 9999;
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        white-space: nowrap;
+        border: 1px solid var(--border-strong);
+        max-width: 380px;
+        text-align: center;
+    }
+
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    #toast.error { border-color: var(--red); color: var(--red); }
+    #toast.success { border-color: var(--green); color: var(--green); }
+    #toast.levelup { border-color: var(--gold); color: var(--gold); font-size: 13px; }
+
+    /* ─── INPUTS ─── */
+    .inp {
+        background: var(--surface2);
+        border: 1px solid var(--border-strong);
+        border-radius: 14px;
+        color: var(--text-1);
+        font-family: 'Sarabun', sans-serif;
+        font-weight: 600;
+        width: 100%;
+        padding: 14px 16px;
+        font-size: 15px;
+        transition: border-color 0.2s;
+        -webkit-appearance: none;
+    }
+
+    .inp:focus { outline: none; border-color: var(--orange); }
+    .inp::placeholder { color: var(--text-3); }
+
+    select.inp option { background: #1a1a1a; }
+
+    .inp-label {
+        font-size: 9px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: var(--text-3);
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .inp-label.accent { color: var(--orange); }
+    .inp-label.blue { color: var(--blue); }
+
+    /* ─── BIG NUMBER INPUT ─── */
+    .big-inp {
+        background: transparent;
+        border: none;
+        color: var(--text-1);
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 56px;
+        width: 100%;
+        text-align: center;
+        outline: none;
+        letter-spacing: 2px;
+    }
+
+    .big-inp::placeholder { color: var(--text-3); }
+
+    /* ─── EQ BUTTONS ─── */
+    .eq-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    .eq-btn {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 10px 12px;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--text-3);
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        text-align: left;
+    }
+
+    .eq-btn.on {
+        background: rgba(255,107,43,0.08);
+        border-color: rgba(255,107,43,0.4);
+        color: var(--orange);
+    }
+
+    /* ─── MODE TOGGLE ─── */
+    .mode-row {
+        display: flex;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 4px;
+        gap: 4px;
+    }
+
+    .mode-opt {
+        flex: 1;
+        text-align: center;
+        padding: 10px;
+        font-size: 11px;
+        font-weight: 700;
+        border-radius: 9px;
+        cursor: pointer;
+        color: var(--text-3);
+        transition: all 0.2s;
+    }
+
+    .mode-opt.on { background: var(--surface); color: var(--text-1); box-shadow: 0 1px 4px rgba(0,0,0,0.5); }
+
+    /* ─── BUTTON ─── */
+    .btn-primary {
+        background: linear-gradient(135deg, var(--orange) 0%, #ff3d6b 100%);
+        color: white;
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 18px;
+        letter-spacing: 3px;
+        padding: 16px 24px;
+        border-radius: 16px;
+        border: none;
+        cursor: pointer;
+        width: 100%;
+        transition: all 0.2s;
+        box-shadow: 0 8px 32px rgba(255,107,43,0.25);
+    }
+
+    .btn-primary:active { transform: scale(0.97); }
+
+    .btn-secondary {
+        background: var(--surface2);
+        border: 1px solid var(--border-strong);
+        color: var(--text-2);
+        font-size: 12px;
+        font-weight: 700;
+        padding: 10px 16px;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-secondary:hover { background: var(--surface); border-color: var(--orange); color: var(--orange); }
+
+    /* ─── RUNNING PROTOCOL ─── */
+    .run-card {
+        background: linear-gradient(135deg, rgba(59,130,246,0.08) 0%, rgba(59,130,246,0.03) 100%);
+        border: 1px solid rgba(59,130,246,0.25);
+        border-radius: 20px;
+        padding: 20px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .run-card::before {
+        content: '🏁';
+        position: absolute;
+        right: -10px; top: -10px;
+        font-size: 80px;
+        opacity: 0.06;
+        transform: rotate(-10deg);
+    }
+
+    .pulse-ring {
+        animation: pulseRing 2.5s ease-in-out infinite;
+    }
+
+    @keyframes pulseRing {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(59,130,246,0.2); }
+        50% { box-shadow: 0 0 0 12px rgba(59,130,246,0); }
+    }
+
+    /* ─── HISTORY ITEM ─── */
+    .hist-item {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: border-color 0.2s;
+    }
+
+    /* ─── ACHIEVEMENT BADGE ─── */
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 50px;
+        letter-spacing: 0.5px;
+    }
+
+    .badge-blue { background: rgba(59,130,246,0.12); color: #60a5fa; border: 1px solid rgba(59,130,246,0.2); }
+    .badge-orange { background: rgba(255,107,43,0.1); color: var(--orange); border: 1px solid rgba(255,107,43,0.2); }
+    .badge-green { background: rgba(34,197,94,0.1); color: #4ade80; border: 1px solid rgba(34,197,94,0.2); }
+    .badge-red { background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
+
+    /* ─── STREAK BOX ─── */
+    .streak-fire {
+        font-size: 32px;
+        animation: fireWiggle 1.5s ease-in-out infinite;
+    }
+
+    @keyframes fireWiggle {
+        0%, 100% { transform: rotate(-5deg) scale(1); }
+        50% { transform: rotate(5deg) scale(1.1); }
+    }
+
+    /* ─── SECTION LABEL ─── */
+    .sec-label {
+        font-size: 9px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        color: var(--text-3);
+        margin-bottom: 12px;
+    }
+
+    /* ─── WORKOUT CARD ─── */
+    .wk-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 16px;
+        margin-bottom: 10px;
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+
+    .wk-card:active { transform: scale(0.98); }
+
+    .wk-num {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 32px;
+        color: var(--text-3);
+        line-height: 1;
+    }
+
+    .rpe-bar { height: 3px; background: var(--surface2); border-radius: 100px; overflow: hidden; margin-top: 8px; }
+    .rpe-fill { height: 100%; border-radius: 100px; background: linear-gradient(90deg, var(--green), var(--orange), var(--red)); }
+
+    /* ─── CIRCULAR PROGRESS ─── */
+    .circ-prog { position: relative; display: inline-block; }
+    .circ-prog svg { transform: rotate(-90deg); }
+    .circ-prog .circ-text {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* ─── SETUP SCREEN ─── */
+    .setup-screen {
+        min-height: 100vh;
+        padding: 40px 20px 100px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* ─── FEED PANEL ─── */
+    .ai-panel {
+        border-radius: 20px;
+        padding: 20px;
+        border-left: 3px solid var(--border);
+        background: var(--surface);
+        position: relative;
+    }
+
+    /* ─── ANIMATION ─── */
+    .fade-up {
+        animation: fadeUp 0.4s ease forwards;
+    }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(16px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── DIVIDER ─── */
+    .divider {
+        border: none;
+        border-top: 1px solid var(--border);
+        margin: 16px 0;
+    }
+
+    /* ─── WEIGHT CHART ─── */
+    canvas#weightChart {
+        width: 100%;
+        max-height: 120px;
+    }
+
+    /* ─── STREAK CALENDAR ─── */
+    .cal-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 5px;
+    }
+
+    .cal-day {
+        aspect-ratio: 1;
+        border-radius: 7px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 9px;
+        font-weight: 700;
+    }
+
+    .cal-day.filled { background: var(--orange); color: white; }
+    .cal-day.today { border: 2px solid var(--orange); color: var(--orange); }
+    .cal-day.empty { background: var(--surface2); color: var(--text-3); }
+
+    /* ─── MACRO RING ─── */
+    .macro-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 12px;
+    }
+
+    .macro-dot {
+        width: 10px; height: 10px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    /* scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 100px; }
+
+    /* ─── WATER TRACKER ─── */
+    .water-cup {
+        width: 32px; height: 40px;
+        border: 2px solid rgba(59,130,246,0.3);
+        border-radius: 4px 4px 8px 8px;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .water-cup.filled { border-color: var(--blue); }
+    .water-cup.filled::after {
+        content: '';
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        height: 100%;
+        background: linear-gradient(to top, rgba(59,130,246,0.6), rgba(59,130,246,0.2));
+        border-radius: 2px 2px 6px 6px;
+    }
+
+    /* ─── TIMER MODAL ─── */
+    #timerModal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.85);
+        z-index: 500;
+        align-items: flex-end;
+        justify-content: center;
+        max-width: 430px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    #timerModal.show { display: flex; }
+
+    .timer-sheet {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 28px 28px 0 0;
+        padding: 30px 24px 50px;
+        width: 100%;
+        animation: slideUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes slideUp {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+    }
+
+    .timer-num {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 96px;
+        text-align: center;
+        letter-spacing: 4px;
+        line-height: 1;
+        color: var(--orange);
+    }
+
+    .timer-progress {
+        height: 4px;
+        background: var(--surface2);
+        border-radius: 100px;
+        overflow: hidden;
+        margin: 20px 0;
+    }
+
+    .timer-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--green), var(--orange));
+        border-radius: 100px;
+        transition: width 1s linear;
+    }
+
+    /* ─── SCROLL SNAP (OPTIONAL) ─── */
+    .snap-x { scroll-snap-type: x mandatory; }
+    .snap-start { scroll-snap-align: start; }
+</style>
+```
+
+</head>
+<body>
+
+<div id="toast">ข้อความ</div>
+
+<!-- REST TIMER MODAL -->
+
+<div id="timerModal">
+    <div class="timer-sheet">
+        <p class="text-center" style="font-size:11px;font-weight:700;letter-spacing:3px;color:var(--text-3);text-transform:uppercase;margin-bottom:8px">Rest Timer</p>
+        <div class="timer-num" id="timerDisplay">60</div>
+        <div class="timer-progress"><div class="timer-fill" id="timerBar" style="width:100%"></div></div>
+        <div style="display:flex;gap:10px;margin-top:10px;">
+            <button class="btn-secondary" style="flex:1" onclick="stopTimer()">ข้ามพัก</button>
+            <button class="btn-primary" style="flex:1;font-size:16px" onclick="stopTimer()">เสร็จแล้ว ✓</button>
+        </div>
+    </div>
+</div>
+
+<div class="app">
+
+```
+<!-- HEADER -->
+<header class="header" id="appHeader">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+            <div class="header-logo">กูจะลากมึงเอง</div>
+            <div class="header-sub">Beast Protocol V15</div>
+        </div>
+        <div id="headerLevelWrap" class="hide">
+            <div class="level-pill" id="headerLevel">LV 1</div>
+            <div class="xp-mini" id="xpMini">0 / 10 XP</div>
+        </div>
+    </div>
+    <!-- XP Bar -->
+    <div id="xpBarWrap" class="xp-bar-wrap hide" style="margin-top:10px;">
+        <div class="xp-bar-fill" id="xpBarFill" style="width:5%"></div>
+    </div>
+</header>
+
+<!-- ══════════════════════════════════ -->
+<!-- SETUP SCREEN -->
+<!-- ══════════════════════════════════ -->
+<div id="setupScreen" class="setup-screen hide">
+    <div style="text-align:center;margin-bottom:32px;">
+        <div style="font-size:56px;margin-bottom:12px;animation:fireWiggle 1.5s ease-in-out infinite;display:inline-block;">🔥</div>
+        <h1 style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:3px;color:var(--text-1);margin-bottom:8px;">ตื่นจากฝัน</h1>
+        <p style="font-size:12px;color:var(--text-2);">กรอกความจริงแล้วให้ A.I. จัดการ</p>
+    </div>
+
+    <!-- IMPORT BOX -->
+    <div class="card" style="border-color:rgba(59,130,246,0.2);background:rgba(59,130,246,0.04);margin-bottom:20px;">
+        <p class="sec-label" style="color:var(--blue);margin-bottom:10px;">📥 กู้คืนข้อมูลเก่า</p>
+        <textarea id="importDataArea" rows="2" class="inp" style="resize:none;font-size:11px;font-family:monospace;" placeholder="วางโค้ด Backup ที่เก็บไว้ที่นี่..."></textarea>
+        <button onclick="importData()" class="btn-secondary" style="width:100%;margin-top:10px;border-color:rgba(59,130,246,0.3);color:var(--blue);">กู้คืนข้อมูล</button>
+    </div>
+
+    <div class="card" style="margin-bottom:20px;">
+        <p class="sec-label" style="text-align:center;margin-bottom:16px;">ผู้ใช้ใหม่</p>
+        <div style="margin-bottom:14px;">
+            <span class="inp-label">ชื่อของคุณ</span>
+            <input type="text" id="setupName" class="inp" placeholder="ชื่อ / ชื่อเล่น">
+        </div>
+        <div style="margin-bottom:14px;">
+            <span class="inp-label accent">⚡ เป้าหมายหลัก</span>
+            <select id="setupGoal" class="inp">
+                <option value="weight_loss">เน้นลดน้ำหนัก + เวทเทรนนิ่ง</option>
+                <option value="run_10k">Mini Marathon 10K</option>
+                <option value="run_21k">Half Marathon 21K</option>
+                <option value="run_42k">Full Marathon 42K</option>
+            </select>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+            <div>
+                <span class="inp-label">น้ำหนักเริ่ม (KG)</span>
+                <input type="number" step="0.1" id="setupWt" class="inp" style="text-align:center;font-family:'Bebas Neue',sans-serif;font-size:28px;" placeholder="75.0">
+            </div>
+            <div>
+                <span class="inp-label accent">เป้าหมาย (KG)</span>
+                <input type="number" step="0.1" id="setupTg" class="inp" style="text-align:center;font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--orange);" placeholder="65.0">
+            </div>
+        </div>
+        <div>
+            <span class="inp-label">ระยะเวลา (เดือน)</span>
+            <input type="number" id="setupMo" class="inp" style="text-align:center;" placeholder="3">
+        </div>
+    </div>
+
+    <button onclick="checkReality()" class="btn-primary" style="font-size:20px;">🤖 ให้ A.I. อนุมัติแผน</button>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- TAB: HOME -->
+<!-- ══════════════════════════════════ -->
+<div id="tabHome" class="tab-content hide fade-up">
+
+    <!-- MAIN STATS -->
+    <div class="card card-glow-orange" style="margin-bottom:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
+            <div>
+                <p class="sec-label">น้ำหนักปัจจุบัน</p>
+                <div style="display:flex;align-items:baseline;gap:6px;">
+                    <span style="font-family:'Bebas Neue',sans-serif;font-size:64px;color:var(--text-1);line-height:1;" id="dashWt">0.0</span>
+                    <span style="font-size:18px;color:var(--text-3);font-weight:600;">KG</span>
+                </div>
+                <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;">
+                    <span class="badge badge-orange">เป้า: <span id="dashTg" style="margin-left:3px;">0</span> kg</span>
+                    <span class="badge" id="dashDiffBadge" style="background:var(--surface2);border:1px solid var(--border);color:var(--text-2);">เหลือ 0 kg</span>
+                </div>
+            </div>
+            <!-- Circular Progress -->
+            <div class="circ-prog">
+                <svg width="80" height="80" viewBox="0 0 80 80">
+                    <circle cx="40" cy="40" r="32" fill="none" stroke="var(--surface2)" stroke-width="6"/>
+                    <circle cx="40" cy="40" r="32" fill="none" stroke="url(#prog-grad)" stroke-width="6"
+                        stroke-linecap="round" stroke-dasharray="201" id="circProgress" stroke-dashoffset="201"
+                        style="transition:stroke-dashoffset 1.2s cubic-bezier(0.23,1,0.32,1)"/>
+                    <defs>
+                        <linearGradient id="prog-grad" x1="0" y1="0" x2="1" y2="0">
+                            <stop offset="0%" stop-color="#ff6b2b"/>
+                            <stop offset="100%" stop-color="#ff3d6b"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <div class="circ-text">
+                    <span style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--orange);" id="circPct">0%</span>
+                    <span style="font-size:8px;color:var(--text-3);font-weight:700;letter-spacing:1px;">DONE</span>
+                </div>
+            </div>
+        </div>
+        <!-- Progress Bar -->
+        <div class="progress-track">
+            <div class="progress-fill" id="progressFill" style="width:0%"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:6px;">
+            <span style="font-size:10px;color:var(--text-3);font-weight:600;" id="dashStartWtLabel">เริ่ม 0 kg</span>
+            <span style="font-size:10px;color:var(--orange);font-weight:600;" id="dashTgLabel">เป้า 0 kg</span>
+        </div>
+    </div>
+
+    <!-- STREAK + WATER ROW -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+        <!-- Streak -->
+        <div class="card" style="padding:16px;">
+            <p class="sec-label" style="margin-bottom:8px;">🔥 Streak</p>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <span class="streak-fire" style="font-size:28px;">🔥</span>
+                <div>
+                    <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--orange);line-height:1;" id="streakDays">0</div>
+                    <div style="font-size:9px;color:var(--text-3);font-weight:700;letter-spacing:1px;">DAYS</div>
+                </div>
+            </div>
+        </div>
+        <!-- Water -->
+        <div class="card" style="padding:16px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <p class="sec-label" style="margin-bottom:0;">💧 น้ำ</p>
+                <span style="font-size:11px;font-weight:700;color:var(--blue);" id="waterCount">0/8</span>
+            </div>
+            <div style="display:flex;gap:4px;flex-wrap:wrap;" id="waterCups">
+                <!-- generated -->
+            </div>
+        </div>
+    </div>
+
+    <!-- TODAY'S MISSION -->
+    <p class="sec-label">⚡ ภารกิจวันนี้</p>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
+        <!-- Nutrition -->
+        <div class="card" style="display:flex;gap:14px;align-items:flex-start;">
+            <div style="font-size:28px;flex-shrink:0;">🥩</div>
+            <div>
+                <p style="font-size:12px;font-weight:800;color:var(--text-1);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">Nutrition Matrix</p>
+                <p style="font-size:11px;color:var(--text-2);line-height:1.6;">IF 16/8 · น้ำ 3-4 ลิตร<br><b style="color:var(--text-1);">โปรตีน:</b> 1.5g × น้ำหนักตัว<br><span style="color:var(--red);">ห้าม:</span> ของทอด · น้ำหวาน · แอล</p>
+            </div>
+        </div>
+
+        <!-- Running Card (conditional) -->
+        <div class="run-card pulse-ring hide" id="homeRunCard">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                <p style="font-size:11px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:1px;">🏃 Today's Run Mission</p>
+                <span style="font-size:9px;font-weight:700;color:var(--text-3);" id="homeRunDay">วันนี้</span>
+            </div>
+            <p style="font-size:16px;font-weight:800;color:var(--text-1);margin-bottom:4px;" id="homeRunTitle">โหลด...</p>
+            <p style="font-size:11px;color:var(--text-2);" id="homeRunDesc">...</p>
+            <button onclick="switchTab('tabPlan',2)" style="margin-top:10px;" class="badge badge-blue">ดูตารางเต็ม →</button>
+        </div>
+    </div>
+
+    <!-- STREAK CALENDAR -->
+    <p class="sec-label">📅 30 วันที่ผ่านมา</p>
+    <div class="card" style="margin-bottom:16px;">
+        <div style="display:flex;gap:4px;justify-content:center;margin-bottom:8px;">
+            <span style="font-size:9px;color:var(--text-3);font-weight:700;">อา</span>
+            <span style="font-size:9px;color:var(--text-3);font-weight:700;margin-left:auto;"></span>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+    </div>
+
+    <!-- GOAL TEXT -->
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:10px;color:var(--text-3);font-weight:700;text-transform:uppercase;letter-spacing:1px;">Core Goal</span>
+        <span style="font-size:11px;color:var(--orange);font-weight:800;text-transform:uppercase;" id="dashGoalText">--</span>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- TAB: TACTICAL MAP -->
+<!-- ══════════════════════════════════ -->
+<div id="tabPlan" class="tab-content hide fade-up">
+
+    <!-- MARATHON PROTOCOL (conditional) -->
+    <div id="runProtoCard" class="run-card pulse-ring hide" style="margin-bottom:20px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <p style="font-size:11px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:2px;">Marathon Protocol</p>
+            <span class="badge badge-blue" id="runDayName">วันนี้</span>
+        </div>
+        <p style="font-size:22px;font-family:'Bebas Neue',sans-serif;letter-spacing:1px;color:var(--text-1);margin-bottom:4px;" id="todayRunTitle">พักผ่อน</p>
+        <p style="font-size:11px;color:var(--text-2);" id="todayRunDesc">โหลด...</p>
+        <hr class="divider">
+        <div style="display:flex;gap:8px;">
+            <div class="stat-box" style="flex:1;padding:10px;">
+                <div class="stat-label">เป้าหมาย</div>
+                <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--blue);" id="runTargetKm">0 <span style="font-size:13px;">KM</span></div>
+            </div>
+            <div class="stat-box" style="flex:1;padding:10px;">
+                <div class="stat-label">Intensity</div>
+                <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--orange);" id="runIntensity">Zone 2</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EQ SELECTOR -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div>
+            <h2 style="font-size:16px;font-weight:800;color:var(--text-1);" id="planTitle">Strength Training</h2>
+            <p style="font-size:9px;color:var(--text-3);font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-top:2px;">เลือกอุปกรณ์ที่มี</p>
+        </div>
+        <div style="background:rgba(255,107,43,0.1);border:1px solid rgba(255,107,43,0.25);border-radius:10px;padding:6px 12px;text-align:center;">
+            <div style="font-size:9px;color:var(--text-3);font-weight:700;text-transform:uppercase;">Difficulty</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--orange);">LV.<span id="mapLv">1</span></div>
+        </div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:20px;">
+        <div class="eq-wrap" id="eqWrap"></div>
+    </div>
+
+    <!-- WORKOUT CARDS -->
+    <div id="workoutContainer"></div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- TAB: LOG -->
+<!-- ══════════════════════════════════ -->
+<div id="tabLog" class="tab-content hide fade-up">
+    <h2 style="font-size:20px;font-weight:800;margin-bottom:2px;">Execution Log</h2>
+    <p style="font-size:10px;color:var(--text-3);font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:20px;">บันทึกความจริง</p>
+
+    <!-- RUN REMINDER (conditional) -->
+    <div id="logRunReminder" class="run-card hide" style="margin-bottom:16px;">
+        <p style="font-size:9px;color:var(--blue);font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">🏃 เป้าหมายวิ่งวันนี้</p>
+        <p style="font-size:14px;font-weight:800;color:var(--text-1);" id="logTargetText">วิ่ง Easy 5K</p>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:14px;">
+
+        <!-- DATE -->
+        <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;">
+            <span style="font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:1px;">📅 วันที่บันทึก</span>
+            <input type="date" id="logDate" onchange="updateRunReminder()" style="background:transparent;border:none;color:var(--orange);font-weight:700;font-size:13px;outline:none;cursor:pointer;font-family:'Sarabun',sans-serif;">
+        </div>
+
+        <!-- WEIGHT -->
+        <div class="card">
+            <span class="inp-label accent" style="text-align:center;display:block;margin-bottom:4px;">⚡ น้ำหนักเช้าวันนี้ (KG) — บังคับ!</span>
+            <div style="position:relative;">
+                <input type="number" step="0.1" id="manWt" class="big-inp" placeholder="00.0">
+                <span style="position:absolute;right:16px;bottom:12px;font-size:16px;color:var(--text-3);font-weight:600;">KG</span>
+            </div>
+        </div>
+
+        <!-- MODE -->
+        <div class="card" style="padding:14px;">
+            <span class="inp-label" style="margin-bottom:8px;">วันนี้ซ้อมอะไร?</span>
+            <div class="mode-row">
+                <div class="mode-opt on" id="modeAll" onclick="setMode('all')">วิ่ง + เวท</div>
+                <div class="mode-opt" id="modeWt" onclick="setMode('weight')">เวทอย่างเดียว</div>
+                <div class="mode-opt" id="modeRest" onclick="setMode('rest')">วันพัก</div>
+            </div>
+        </div>
+
+        <!-- RUN + HR -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;" id="runDataWrap">
+            <div class="card" style="padding:14px;border-color:rgba(59,130,246,0.2);">
+                <span class="inp-label blue">🏃 ระยะวิ่ง (KM)</span>
+                <input type="number" step="0.1" id="manDist" class="inp" style="padding:10px;font-size:20px;font-family:'Bebas Neue',sans-serif;text-align:center;background:transparent;border:none;border-top:1px solid var(--border);margin-top:6px;border-radius:0;" placeholder="0.0">
+            </div>
+            <div class="card" style="padding:14px;">
+                <span class="inp-label">❤️ Avg HR (BPM)</span>
+                <input type="number" id="manHR" class="inp" style="padding:10px;font-size:20px;font-family:'Bebas Neue',sans-serif;text-align:center;background:transparent;border:none;border-top:1px solid var(--border);margin-top:6px;border-radius:0;" placeholder="0">
+            </div>
+        </div>
+
+        <!-- NUTRITION -->
+        <div class="card">
+            <span class="inp-label" style="margin-bottom:10px;">โภชนาการ (ความจริงเท่านั้น)</span>
+            <input type="number" id="manCal" class="inp" style="margin-bottom:10px;" placeholder="แคลอรี่ที่กินไป (เช่น 2000)">
+            <select id="manDiet" class="inp">
+                <option value="perfect">นักบุญ — คุมอาหารเป๊ะ</option>
+                <option value="bad">คนบาป — หลุดกินของอ้วน</option>
+            </select>
+        </div>
+
+        <!-- NOTES (NEW!) -->
+        <div class="card">
+            <span class="inp-label" style="margin-bottom:8px;">📝 Note ของวันนี้ (optional)</span>
+            <textarea id="manNote" class="inp" rows="2" style="resize:none;font-size:13px;" placeholder="รู้สึกอย่างไร? ปวดตรงไหน? PR ใหม่?"></textarea>
+        </div>
+
+        <button onclick="processLog()" class="btn-primary">⚡ ส่งข้อมูลให้ A.I. โค้ช</button>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- TAB: ANALYTICS -->
+<!-- ══════════════════════════════════ -->
+<div id="tabAnalytics" class="tab-content hide fade-up">
+    <h2 style="font-size:20px;font-weight:800;margin-bottom:2px;">A.I. Analytics</h2>
+    <p style="font-size:10px;color:var(--text-3);font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:20px;">คำพิพากษา &amp; ประวัติศาสตร์</p>
+
+    <!-- AI FEEDBACK -->
+    <div class="ai-panel" id="aiFeedPanel" style="margin-bottom:20px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+            <span style="font-size:36px;" id="feedEmoji">🤖</span>
+            <div>
+                <p style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--text-1);">คำวิจารณ์ล่าสุด</p>
+            </div>
+        </div>
+        <p style="font-size:13px;color:var(--text-2);line-height:1.7;" id="feedText">รอการบันทึกข้อมูลรายวัน...</p>
+    </div>
+
+    <!-- STATS OVERVIEW -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:20px;">
+        <div class="stat-box">
+            <div class="stat-label">บันทึกแล้ว</div>
+            <div class="stat-val" style="color:var(--orange);font-size:32px;" id="statTotalLogs">0</div>
+            <div class="stat-label" style="margin-top:2px;">วัน</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">ลดได้</div>
+            <div class="stat-val" style="color:var(--green);font-size:32px;" id="statLost">0.0</div>
+            <div class="stat-label" style="margin-top:2px;">KG</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">วิ่งรวม</div>
+            <div class="stat-val" style="color:var(--blue);font-size:32px;" id="statKm">0</div>
+            <div class="stat-label" style="margin-top:2px;">KM</div>
+        </div>
+    </div>
+
+    <!-- WEIGHT CHART -->
+    <p class="sec-label">📈 กราฟน้ำหนัก</p>
+    <div class="card" style="margin-bottom:20px;padding:16px 10px 10px;">
+        <canvas id="weightChart" height="100"></canvas>
+        <p style="font-size:9px;color:var(--text-3);text-align:center;margin-top:6px;font-weight:600;">แนวโน้มน้ำหนักรายวัน</p>
+    </div>
+
+    <!-- BACKUP -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <div>
+            <p style="font-size:11px;font-weight:800;color:var(--text-1);">💾 สำรองข้อมูล</p>
+            <p style="font-size:10px;color:var(--text-3);margin-top:2px;">ก๊อปปี้โค้ดเก็บไว้ใน Notes</p>
+        </div>
+        <button onclick="exportData()" class="btn-secondary">ก๊อปปี้ Backup</button>
+    </div>
+
+    <!-- HISTORY -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <p class="sec-label" style="margin-bottom:0;">Log History</p>
+        <button onclick="resetApp()" style="width:32px;height:32px;border-radius:50%;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;">🗑️</button>
+    </div>
+    <div id="histList" style="display:flex;flex-direction:column;gap:8px;padding-bottom:20px;"></div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav hide" id="bottomNav">
+    <button class="nav-btn active" onclick="switchTab('tabHome',0)">
+        <div class="nav-icon">🏠</div>
+        <span>Home</span>
+        <div class="nav-dot"></div>
+    </button>
+    <button class="nav-btn" onclick="switchTab('tabPlan',1)">
+        <div class="nav-icon">📋</div>
+        <span>Map</span>
+        <div class="nav-dot"></div>
+    </button>
+    <button class="nav-btn" onclick="switchTab('tabLog',2)">
+        <div class="nav-icon">⚡</div>
+        <span>Log</span>
+        <div class="nav-dot"></div>
+    </button>
+    <button class="nav-btn" onclick="switchTab('tabAnalytics',3)">
+        <div class="nav-icon">📊</div>
+        <span>A.I.</span>
+        <div class="nav-dot"></div>
+    </button>
+</nav>
+```
+
+</div><!-- end .app -->
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// STATE & CONSTANTS
+// ══════════════════════════════════════════════════════════════
+const STORE = 'GooJaLakV15';
+let state = {
+    isSetup: false, name: '', startWt: 0, targetWt: 0, months: 0, goal: 'weight_loss',
+    selectedEq: ['bodyweight'], history: [], userLevel: 1, xp: 0,
+    waterToday: 0, waterDate: '', achievements: []
+};
+
+const GOALS = {
+    weight_loss: 'ลดไขมัน + เวทเทรนนิ่ง',
+    run_10k: 'Mini Marathon 10K',
+    run_21k: 'Half Marathon 21K',
+    run_42k: 'Full Marathon 42K'
+};
+
+const DAYS_TH = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
+
+const RUN_PLANS = {
+    run_10k: [
+        { title:'Long Run 8-10K', desc:'วิ่งช้าๆ โซน 2 สร้างฐานความอึด', target:8, zone:'Zone 2' },
+        { title:'Rest / Cross Train', desc:'พักหรือเล่นเวทเบาๆ ฟื้นฟูกล้ามเนื้อ', target:0, zone:'Active Rest' },
+        { title:'Intervals 400m × 6', desc:'วิ่งเร็ว 400m สลับจ๊อก 200m ทำ 6 รอบ', target:4, zone:'Zone 4-5' },
+        { title:'Easy Run 3-5K', desc:'วิ่งสบายๆ ผ่อนคลายกล้ามเนื้อ', target:3, zone:'Zone 2' },
+        { title:'Tempo 5K', desc:'วิ่งโซน 3 ต่อเนื่อง เหนื่อยหอบนิดๆ', target:5, zone:'Zone 3' },
+        { title:'Active Rest / Core', desc:'เล่นหน้าท้อง/แพลงก์ ไม่ต้องวิ่ง', target:0, zone:'Recovery' },
+        { title:'Easy Run 3K', desc:'จ๊อกเบาๆ เตรียมพร้อมวัน Long Run', target:3, zone:'Zone 1' }
+    ],
+    run_21k: [
+        { title:'LONG RUN 15-18K', desc:'คุมเพซให้คงที่ ซ้อมกินเจลและน้ำ', target:15, zone:'Zone 2-3' },
+        { title:'Rest / Cross Train', desc:'พักเต็มที่ ร่างกายต้องการซ่อมแซม', target:0, zone:'Rest' },
+        { title:'Speed 800m × 6', desc:'วิ่งเร็ว 800m สลับจ๊อก 400m', target:7, zone:'Zone 4-5' },
+        { title:'Recovery Run 6K', desc:'วิ่งโคตรช้า โซน 1-2 สลัดล้า', target:6, zone:'Zone 1' },
+        { title:'Tempo Run 8K', desc:'วอร์ม 2K → วิ่งแข่ง 6K → คูลดาวน์', target:8, zone:'Zone 3' },
+        { title:'Rest / Core Strength', desc:'เวทช่วงล่าง + แกนกลาง', target:0, zone:'Strength' },
+        { title:'Easy 5K + Strides', desc:'วิ่งเบาๆ 5K ตบท้ายสปริ้นท์ 100m × 4', target:5, zone:'Zone 2' }
+    ],
+    run_42k: [
+        { title:'THE LONG RUN 25-32K', desc:'นรกของจริง! วิ่งเพซมาราธอน ซ้อมแผนโภชนาการ', target:25, zone:'Marathon Pace' },
+        { title:'Complete Rest', desc:'วันนี้ห้ามใช้ขาเด็ดขาด! นอนโง่ๆ', target:0, zone:'Rest' },
+        { title:'Yasso 800s × 8', desc:'วิ่งเร็ว 800m × 8 รอบ พัก 3 นาที', target:8, zone:'Zone 5' },
+        { title:'Mid-Long 10-12K', desc:'วิ่งโซน 2 สะสมระยะ สร้างฐานอึด', target:10, zone:'Zone 2' },
+        { title:'Marathon Tempo 12K', desc:'วิ่งเพซเร็วกว่าเป้าหมายนิดหน่อย', target:12, zone:'Zone 3-4' },
+        { title:'Rest / Cross Train', desc:'เวทสร้างความแข็งแรงช่วงล่าง', target:0, zone:'Strength' },
+        { title:'Easy 6-8K', desc:'วิ่งเบาที่สุด เตรียมรับนรกพรุ่งนี้', target:6, zone:'Zone 1' }
+    ]
+};
+
+const EQ_LIST = [
+    { id:'bodyweight', name:'ร่างกายเปล่า', icon:'🧍' },
+    { id:'band', name:'ยางยืด', icon:'〰️' },
+    { id:'dumbbell', name:'ดัมเบล', icon:'🏋️' },
+    { id:'kettlebell', name:'เคตเทิลเบล', icon:'🔔' },
+    { id:'barbell', name:'บาร์เบล', icon:'⚖️' },
+    { id:'pullup', name:'บาร์โหน', icon:'🔝' },
+    { id:'cable', name:'เคเบิล', icon:'🔌' },
+    { id:'smith', name:'Smith Machine', icon:'🏗️' },
+    { id:'trx', name:'TRX', icon:'🎯' },
+    { id:'medball', name:'Med Ball', icon:'⚽' }
+];
+
+const EXERCISES = {
+    bodyweight:[
+        {n:'Jumping Jacks',s:1,r:'60s',rest:15,t:'Fast',rpe:6,eq:'Bodyweight'},
+        {n:'Air Squats',s:3,r:15,rest:45,t:'3-0-1-0',rpe:7,eq:'Bodyweight'},
+        {n:'Push-ups',s:3,r:10,rest:60,t:'2-1-1-0',rpe:8,eq:'Bodyweight'},
+        {n:'Plank',s:3,r:'45s',rest:30,t:'Hold',rpe:8,eq:'Bodyweight'},
+        {n:'Burpees',s:3,r:10,rest:60,t:'Explosive',rpe:9,eq:'Bodyweight'},
+        {n:'Lunges',s:3,r:'10/Leg',rest:45,t:'2-1-1-0',rpe:7,eq:'Bodyweight'},
+        {n:'Mountain Climbers',s:3,r:'30s',rest:30,t:'Fast',rpe:8,eq:'Bodyweight'},
+        {n:'Hip Thrusts (BW)',s:3,r:15,rest:40,t:'2-2-1-0',rpe:7,eq:'Bodyweight'}
+    ],
+    band:[
+        {n:'Band Pull-Aparts',s:3,r:15,rest:45,t:'2-1-2-1',rpe:7,eq:'Band'},
+        {n:'Banded Squat',s:3,r:12,rest:60,t:'3-1-1-0',rpe:8,eq:'Band'},
+        {n:'Band Chest Press',s:3,r:12,rest:45,t:'2-1-1-0',rpe:7,eq:'Band'},
+        {n:'Band Deadlift',s:3,r:15,rest:60,t:'2-0-1-1',rpe:8,eq:'Band'}
+    ],
+    dumbbell:[
+        {n:'DB Goblet Squat',s:3,r:10,rest:60,t:'3-1-1-0',rpe:8,eq:'Dumbbell'},
+        {n:'DB Bench Press',s:3,r:10,rest:90,t:'2-0-1-1',rpe:8,eq:'Dumbbell'},
+        {n:'DB Rows',s:3,r:12,rest:60,t:'2-1-1-1',rpe:8,eq:'Dumbbell'},
+        {n:'DB Overhead Press',s:3,r:10,rest:60,t:'2-0-1-0',rpe:8,eq:'Dumbbell'},
+        {n:'DB Lunges',s:3,r:'10/Leg',rest:60,t:'2-1-1-0',rpe:8,eq:'Dumbbell'},
+        {n:'DB RDL',s:3,r:10,rest:75,t:'3-1-1-0',rpe:8,eq:'Dumbbell'}
+    ],
+    kettlebell:[
+        {n:'KB Swings',s:4,r:15,rest:60,t:'Explosive',rpe:8,eq:'Kettlebell'},
+        {n:'KB Russian Twist',s:3,r:16,rest:45,t:'1-0-1-0',rpe:7,eq:'Kettlebell'},
+        {n:'KB Goblet Squat',s:3,r:12,rest:60,t:'3-1-1-0',rpe:8,eq:'Kettlebell'}
+    ],
+    barbell:[
+        {n:'Barbell Back Squat',s:3,r:8,rest:120,t:'3-1-1-0',rpe:8,eq:'Barbell'},
+        {n:'Barbell Deadlift',s:3,r:6,rest:120,t:'Hold',rpe:9,eq:'Barbell'},
+        {n:'Barbell Bench Press',s:3,r:8,rest:120,t:'2-0-1-0',rpe:8,eq:'Barbell'},
+        {n:'Barbell Row',s:3,r:8,rest:90,t:'2-1-1-0',rpe:8,eq:'Barbell'}
+    ],
+    cable:[
+        {n:'Cable Tricep Pushdown',s:3,r:12,rest:45,t:'2-0-1-1',rpe:7,eq:'Cable'},
+        {n:'Cable Woodchopper',s:3,r:12,rest:45,t:'1-1-1-0',rpe:7,eq:'Cable'},
+        {n:'Cable Face Pull',s:3,r:15,rest:45,t:'2-1-2-0',rpe:7,eq:'Cable'}
+    ],
+    smith:[{n:'Smith Machine Lunges',s:3,r:10,rest:60,t:'3-0-1-0',rpe:8,eq:'Smith'}],
+    trx:[{n:'TRX Inverted Row',s:3,r:12,rest:60,t:'2-1-2-0',rpe:8,eq:'TRX'}],
+    medball:[{n:'Med Ball Slams',s:3,r:12,rest:45,t:'Explosive',rpe:9,eq:'MedBall'}],
+    pullup:[{n:'Strict Pull-ups',s:3,r:'Max',rest:120,t:'1-0-1-1',rpe:9,eq:'Pull Bar'}]
+};
+
+// ══════════════════════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════════════════════
+function showToast(msg, type='error') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = type + ' show';
+    clearTimeout(t._to);
+    t._to = setTimeout(() => t.classList.remove('show'), 3800);
+}
+
+// ══════════════════════════════════════════════════════════════
+// REST TIMER
+// ══════════════════════════════════════════════════════════════
+let timerInterval = null;
+let timerTotal = 60;
+let timerLeft = 60;
+
+function startTimer(seconds) {
+    clearInterval(timerInterval);
+    timerTotal = seconds;
+    timerLeft = seconds;
+    document.getElementById('timerModal').classList.add('show');
+    updateTimerDisplay();
+    timerInterval = setInterval(() => {
+        timerLeft--;
+        updateTimerDisplay();
+        if (timerLeft <= 0) stopTimer();
+    }, 1000);
+}
+
+function updateTimerDisplay() {
+    document.getElementById('timerDisplay').textContent = timerLeft;
+    const pct = (timerLeft / timerTotal) * 100;
+    document.getElementById('timerBar').style.width = pct + '%';
+    if (timerLeft <= 5) document.getElementById('timerDisplay').style.color = 'var(--red)';
+    else if (timerLeft <= 15) document.getElementById('timerDisplay').style.color = 'var(--gold)';
+    else document.getElementById('timerDisplay').style.color = 'var(--orange)';
+}
+
+function stopTimer() {
+    clearInterval(timerInterval);
+    document.getElementById('timerModal').classList.remove('show');
+}
+
+// ══════════════════════════════════════════════════════════════
+// WATER TRACKER
+// ══════════════════════════════════════════════════════════════
+function initWater() {
+    const today = getTodayStr();
+    if (state.waterDate !== today) { state.waterToday = 0; state.waterDate = today; save(); }
+    renderWater();
+}
+
+function renderWater() {
+    const c = document.getElementById('waterCups');
+    const w = document.getElementById('waterCount');
+    if (!c) return;
+    c.innerHTML = '';
+    for (let i = 0; i < 8; i++) {
+        const cup = document.createElement('div');
+        cup.className = 'water-cup' + (i < state.waterToday ? ' filled' : '');
+        cup.onclick = () => toggleWater(i);
+        c.appendChild(cup);
+    }
+    if (w) w.textContent = `${state.waterToday}/8`;
+}
+
+function toggleWater(idx) {
+    if (idx < state.waterToday) { state.waterToday = idx; }
+    else { state.waterToday = idx + 1; }
+    if (state.waterToday === 8) showToast('💧 ดื่มน้ำครบ 8 แก้ว! เยี่ยมมาก!', 'success');
+    save(); renderWater();
+}
+
+// ══════════════════════════════════════════════════════════════
+// STREAK CALENDAR
+// ══════════════════════════════════════════════════════════════
+function renderCalendar() {
+    const grid = document.getElementById('calGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    const today = new Date();
+    const logDates = new Set(state.history.map(h => {
+        const d = new Date(h.dateRaw);
+        return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    }));
+
+    for (let i = 29; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(today.getDate() - i);
+        const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+        const isToday = i === 0;
+        const hasLog = logDates.has(key);
+        const el = document.createElement('div');
+        el.className = 'cal-day ' + (hasLog ? 'filled' : isToday ? 'today' : 'empty');
+        el.textContent = d.getDate();
+        grid.appendChild(el);
+    }
+}
+
+// ══════════════════════════════════════════════════════════════
+// STREAK COUNT
+// ══════════════════════════════════════════════════════════════
+function calcStreak() {
+    if (!state.history.length) return 0;
+    const sorted = [...state.history].sort((a,b) => b.dateRaw - a.dateRaw);
+    let streak = 0;
+    let check = new Date();
+    check.setHours(0,0,0,0);
+
+    for (const log of sorted) {
+        const d = new Date(log.dateRaw);
+        d.setHours(0,0,0,0);
+        const diff = Math.round((check - d) / 86400000);
+        if (diff === 0 || diff === 1) { streak++; check = d; }
+        else break;
+    }
+    return streak;
+}
+
+// ══════════════════════════════════════════════════════════════
+// WEIGHT CHART
+// ══════════════════════════════════════════════════════════════
+function renderChart() {
+    const canvas = document.getElementById('weightChart');
+    if (!canvas || !state.history.length) return;
+    const ctx = canvas.getContext('2d');
+    const sorted = [...state.history].sort((a,b) => a.dateRaw - b.dateRaw).slice(-14);
+    const w = canvas.offsetWidth || 350;
+    const h = 100;
+    canvas.width = w;
+    canvas.height = h;
+
+    const weights = sorted.map(l => l.weight);
+    const minW = Math.min(...weights) - 1;
+    const maxW = Math.max(...weights) + 1;
+    const pad = 20;
+
+    ctx.clearRect(0,0,w,h);
+
+    // Grid lines
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 3; i++) {
+        const y = pad + (i/3) * (h - pad*2);
+        ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke();
+    }
+
+    // Target line
+    if (state.targetWt >= minW && state.targetWt <= maxW) {
+        const ty = pad + (1 - (state.targetWt - minW)/(maxW - minW)) * (h - pad*2);
+        ctx.strokeStyle = 'rgba(255,107,43,0.3)';
+        ctx.setLineDash([4,4]);
+        ctx.beginPath(); ctx.moveTo(0,ty); ctx.lineTo(w,ty); ctx.stroke();
+        ctx.setLineDash([]);
+    }
+
+    // Area gradient
+    const grad = ctx.createLinearGradient(0,0,0,h);
+    grad.addColorStop(0,'rgba(255,107,43,0.3)');
+    grad.addColorStop(1,'rgba(255,107,43,0)');
+
+    const pts = sorted.map((l, i) => {
+        const x = pad + (i / Math.max(sorted.length-1,1)) * (w - pad*2);
+        const y = pad + (1 - (l.weight - minW)/(maxW - minW)) * (h - pad*2);
+        return {x,y};
+    });
+
+    ctx.beginPath();
+    pts.forEach((p,i) => i===0 ? ctx.moveTo(p.x,p.y) : ctx.lineTo(p.x,p.y));
+    ctx.lineTo(pts[pts.length-1].x, h);
+    ctx.lineTo(pts[0].x, h);
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // Line
+    ctx.beginPath();
+    ctx.strokeStyle = '#ff6b2b';
+    ctx.lineWidth = 2.5;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    pts.forEach((p,i) => i===0 ? ctx.moveTo(p.x,p.y) : ctx.lineTo(p.x,p.y));
+    ctx.stroke();
+
+    // Dots
+    pts.forEach((p,i) => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 4, 0, Math.PI*2);
+        ctx.fillStyle = i === pts.length-1 ? '#ff6b2b' : '#333';
+        ctx.strokeStyle = '#ff6b2b';
+        ctx.lineWidth = 2;
+        ctx.fill(); ctx.stroke();
+    });
+}
+
+// ══════════════════════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════════════════════
+function getTodayStr() {
+    const n = new Date();
+    return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+}
+
+function save() { localStorage.setItem(STORE, JSON.stringify(state)); }
+
+function getRunMission(dateObj) {
+    if (!state.goal.startsWith('run_')) return null;
+    return RUN_PLANS[state.goal][dateObj.getDay()];
+}
+
+function getCurrentWt() {
+    return state.history.length > 0 ? state.history[state.history.length-1].weight : state.startWt;
+}
+
+// ══════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════
+function initApp() {
+    document.getElementById('logDate').value = getTodayStr();
+    const saved = localStorage.getItem(STORE);
+    if (saved) {
+        try {
+            const p = JSON.parse(saved);
+            if (p.isSetup) { state = { ...state, ...p }; bootDashboard(); return; }
+        } catch(e) {}
+    }
+    document.getElementById('setupScreen').classList.remove('hide');
+}
+
+// ══════════════════════════════════════════════════════════════
+// SETUP
+// ══════════════════════════════════════════════════════════════
+function checkReality() {
+    const n = document.getElementById('setupName').value.trim();
+    const w = parseFloat(document.getElementById('setupWt').value);
+    const t = parseFloat(document.getElementById('setupTg').value);
+    const m = parseInt(document.getElementById('setupMo').value);
+    const g = document.getElementById('setupGoal').value;
+
+    if (!n || !w || !t || !m) return showToast('กรอกให้ครบก่อน! อยากผอมแต่ขี้เกียจพิมพ์?', 'error');
+    if (w <= t) return showToast('น้ำหนักเริ่มต้องมากกว่าเป้าหมายสิ!', 'error');
+    const rate = (w - t) / m;
+    if (rate > 5) return showToast(`A.I.: ลดเดือนละ ${rate.toFixed(1)} kg? เพ้อฝัน! แก้ตัวเลขใหม่!`, 'error');
+
+    state = { ...state, name:n, startWt:w, targetWt:t, months:m, goal:g, isSetup:true, userLevel:1, xp:0, history:[], selectedEq:['bodyweight'] };
+    save();
+    document.getElementById('setupScreen').classList.add('hide');
+    bootDashboard();
+    showToast(`ยินดีต้อนรับ ${n}! ลุยเลย!`, 'success');
+}
+
+function importData() {
+    const raw = document.getElementById('importDataArea').value.trim();
+    if (!raw) return showToast('ใส่โค้ด Backup ก่อน!', 'error');
+    try {
+        const p = JSON.parse(atob(raw));
+        if (p.isSetup && p.name) {
+            state = p;
+            if (!state.waterToday) state.waterToday = 0;
+            if (!state.waterDate) state.waterDate = '';
+            save();
+            document.getElementById('setupScreen').classList.add('hide');
+            showToast('🎉 กู้ข้อมูลสำเร็จ!', 'success');
+            bootDashboard();
+        } else throw '';
+    } catch(e) { showToast('❌ โค้ดพัง! กู้ไม่ได้', 'error'); }
+}
+
+function exportData() {
+    if (!state.isSetup) return showToast('ยังไม่มีข้อมูล', 'error');
+    const s = btoa(JSON.stringify(state));
+    navigator.clipboard.writeText(s).then(() => showToast('✅ ก๊อปปี้ Backup แล้ว! เก็บไว้ใน Notes', 'success'))
+        .catch(() => {
+            const ta = document.createElement('textarea'); ta.value = s;
+            document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+            showToast('✅ ก๊อปปี้แล้ว!', 'success');
+        });
+}
+
+// ══════════════════════════════════════════════════════════════
+// BOOT DASHBOARD
+// ══════════════════════════════════════════════════════════════
+function bootDashboard() {
+    document.getElementById('bottomNav').classList.remove('hide');
+    document.getElementById('tabHome').classList.remove('hide');
+    document.getElementById('headerLevelWrap').classList.remove('hide');
+    document.getElementById('xpBarWrap').classList.remove('hide');
+
+    updateLevelUI();
+    updateHomeTab();
+    buildEqButtons();
+    generateWorkout();
+    renderHistory();
+    initWater();
+    renderCalendar();
+
+    setTimeout(renderChart, 100);
+}
+
+function updateLevelUI() {
+    const xpPerLevel = 10;
+    const lvl = state.userLevel;
+    const xpInLevel = state.xp % xpPerLevel;
+    document.getElementById('headerLevel').textContent = `LV ${lvl}`;
+    document.getElementById('xpMini').textContent = `${xpInLevel} / ${xpPerLevel} XP`;
+    document.getElementById('mapLv').textContent = lvl;
+    const pct = (xpInLevel / xpPerLevel) * 100;
+    document.getElementById('xpBarFill').style.width = Math.max(3, pct) + '%';
+}
+
+function updateHomeTab() {
+    const curWt = getCurrentWt();
+    const totalDiff = state.startWt - state.targetWt;
+    const done = Math.max(0, state.startWt - curWt);
+    const pct = totalDiff > 0 ? Math.min(100, (done / totalDiff) * 100) : 0;
+
+    document.getElementById('dashWt').textContent = curWt.toFixed(1);
+    document.getElementById('dashTg').textContent = state.targetWt;
+    document.getElementById('dashDiffBadge').textContent = `เหลือ ${Math.max(0, curWt - state.targetWt).toFixed(1)} kg`;
+    document.getElementById('dashGoalText').textContent = GOALS[state.goal];
+    document.getElementById('dashStartWtLabel').textContent = `เริ่ม ${state.startWt} kg`;
+    document.getElementById('dashTgLabel').textContent = `เป้า ${state.targetWt} kg`;
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('streakDays').textContent = calcStreak();
+
+    // Circular progress
+    const circ = 201;
+    document.getElementById('circProgress').style.strokeDashoffset = circ - (circ * pct / 100);
+    document.getElementById('circPct').textContent = Math.round(pct) + '%';
+
+    // Running card
+    if (state.goal.startsWith('run_')) {
+        document.getElementById('homeRunCard').classList.remove('hide');
+        const m = getRunMission(new Date());
+        document.getElementById('homeRunDay').textContent = 'วัน' + DAYS_TH[new Date().getDay()];
+        document.getElementById('homeRunTitle').textContent = m.title;
+        document.getElementById('homeRunDesc').textContent = m.desc;
+
+        // Plan tab
+        document.getElementById('runProtoCard').classList.remove('hide');
+        document.getElementById('runDayName').textContent = 'วัน' + DAYS_TH[new Date().getDay()];
+        document.getElementById('todayRunTitle').textContent = m.title;
+        document.getElementById('todayRunDesc').textContent = m.desc;
+        document.getElementById('runTargetKm').innerHTML = `${m.target} <span style="font-size:13px">KM</span>`;
+        document.getElementById('runIntensity').textContent = m.zone || 'Zone 2';
+        document.getElementById('planTitle').textContent = 'Cross-Training เสริม';
+
+        updateRunReminder();
+    } else {
+        document.getElementById('homeRunCard').classList.add('hide');
+        document.getElementById('runProtoCard').classList.add('hide');
+        document.getElementById('logRunReminder').classList.add('hide');
+    }
+
+    // Analytics stats
+    const totalKm = state.history.reduce((s,l) => s + (l.dist||0), 0);
+    const totalLost = Math.max(0, state.startWt - curWt);
+    document.getElementById('statTotalLogs').textContent = state.history.length;
+    document.getElementById('statLost').textContent = totalLost.toFixed(1);
+    document.getElementById('statKm').textContent = Math.round(totalKm);
+}
+
+function updateRunReminder() {
+    if (!state.goal.startsWith('run_')) return;
+    const val = document.getElementById('logDate').value;
+    if (!val) return;
+    const d = new Date(val + 'T12:00:00');
+    const m = getRunMission(d);
+    const el = document.getElementById('logRunReminder');
+    const txt = document.getElementById('logTargetText');
+    el.classList.remove('hide');
+    txt.textContent = m.target > 0 ? `${m.title} — เป้า ${m.target} KM` : 'พักผ่อน / Cross Training (ไม่ต้องวิ่ง)';
+}
+
+// ══════════════════════════════════════════════════════════════
+// EQUIPMENT BUTTONS
+// ══════════════════════════════════════════════════════════════
+function buildEqButtons() {
+    const wrap = document.getElementById('eqWrap');
+    wrap.innerHTML = '';
+    EQ_LIST.forEach(eq => {
+        const on = state.selectedEq.includes(eq.id);
+        const btn = document.createElement('button');
+        btn.className = 'eq-btn' + (on ? ' on' : '');
+        btn.setAttribute('data-id', eq.id);
+        btn.innerHTML = `<span>${eq.icon} ${eq.name}</span><span>${on ? '✓' : ''}</span>`;
+        btn.onclick = () => toggleEq(eq.id, btn);
+        wrap.appendChild(btn);
+    });
+}
+
+function toggleEq(id, btn) {
+    const idx = state.selectedEq.indexOf(id);
+    if (idx > -1) {
+        if (state.selectedEq.length === 1) return showToast('ต้องมีอุปกรณ์อย่างน้อย 1 อย่าง', 'error');
+        state.selectedEq.splice(idx, 1);
+        btn.classList.remove('on'); btn.lastChild.textContent = '';
+    } else {
+        state.selectedEq.push(id);
+        btn.classList.add('on'); btn.lastChild.textContent = '✓';
+    }
+    save(); generateWorkout();
+}
+
+// ══════════════════════════════════════════════════════════════
+// GENERATE WORKOUT
+// ══════════════════════════════════════════════════════════════
+function generateWorkout() {
+    const container = document.getElementById('workoutContainer');
+    container.innerHTML = '';
+
+    let pool = [];
+    state.selectedEq.forEach(id => { if (EXERCISES[id]) pool.push(...EXERCISES[id]); });
+    if (!pool.length) pool = [...EXERCISES.bodyweight];
+    pool = pool.sort(() => Math.random() - 0.5);
+
+    const num = state.goal.startsWith('run_') ? 3 : 5;
+
+    // Header
+    container.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;background:rgba(255,107,43,0.05);border:1px solid rgba(255,107,43,0.15);border-radius:14px;padding:14px 16px;margin-bottom:12px;">
+            <div>
+                <p style="font-size:11px;font-weight:800;color:var(--orange);text-transform:uppercase;letter-spacing:1px;">🔥 A.I. Program — LV.${state.userLevel}</p>
+                <p style="font-size:10px;color:var(--text-3);margin-top:2px;">${state.goal.startsWith('run_') ? 'Cross-training 3 ท่า (ป้องกันล้าก่อนวันวิ่ง)' : 'Strength Session 5 ท่า'}</p>
+            </div>
+            <button onclick="generateWorkout()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:18px;cursor:pointer;" title="สุ่มใหม่">🔀</button>
+        </div>
+    `;
+
+    for (let i = 0; i < num; i++) {
+        const ex = pool[i % pool.length];
+        if (!ex) continue;
+        const sets = typeof ex.s === 'number' ? ex.s + Math.floor((state.userLevel-1)/3) : ex.s;
+        const reps = typeof ex.r === 'number' ? ex.r + (state.userLevel-1) : ex.r;
+        const rest = typeof ex.rest === 'number' ? Math.max(10, ex.rest - (state.userLevel-1)*2) : ex.rest;
+        const rpe = typeof ex.rpe === 'number' ? Math.min(10, ex.rpe + state.userLevel*0.1) : ex.rpe;
+        const rpeNum = parseFloat(rpe);
+        const rpeW = Math.min(100, (rpeNum/10)*100);
+
+        const html = `
+        <div class="wk-card" onclick="startTimer(${typeof rest==='number'?rest:60})">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <div class="wk-num">${i+1}</div>
+                    <div>
+                        <p style="font-size:13px;font-weight:800;color:var(--text-1);line-height:1.2;">${ex.n}</p>
+                        <p style="font-size:9px;color:var(--text-3);font-weight:600;margin-top:2px;text-transform:uppercase;letter-spacing:0.5px;">${ex.eq}</p>
+                    </div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--orange);line-height:1;">${sets}×${reps}</div>
+                    <div style="font-size:9px;color:var(--text-3);font-weight:700;">REST ${typeof rest==='number'?rest+'s':rest}</div>
+                </div>
+            </div>
+            <div style="display:flex;gap:6px;margin-bottom:8px;">
+                <span class="badge" style="background:var(--surface2);border:1px solid var(--border);color:var(--text-2);font-size:9px;">⏱ ${ex.t}</span>
+                <span class="badge" style="background:var(--surface2);border:1px solid var(--border);color:var(--text-2);font-size:9px;">RPE ${rpeNum.toFixed(1)}</span>
+                <span class="badge badge-orange" style="font-size:9px;margin-left:auto;">⏸ แตะเพื่อตั้งนาฬิกา</span>
+            </div>
+            <div class="rpe-bar"><div class="rpe-fill" style="width:${rpeW}%"></div></div>
+        </div>`;
+        container.innerHTML += html;
+    }
+}
+
+// ══════════════════════════════════════════════════════════════
+// LOG MODE
+// ══════════════════════════════════════════════════════════════
+function setMode(m) {
+    ['modeAll','modeWt','modeRest'].forEach(id => document.getElementById(id).classList.remove('on'));
+    document.getElementById('mode'+m.charAt(0).toUpperCase()+m.slice(1)).classList.add('on');
+    const runW = document.getElementById('runDataWrap');
+    runW.style.display = (m === 'weight' || m === 'rest') ? 'none' : 'grid';
+    if (m === 'rest') { document.getElementById('manDist').value = ''; document.getElementById('manHR').value = ''; }
+}
+
+// ══════════════════════════════════════════════════════════════
+// PROCESS LOG
+// ══════════════════════════════════════════════════════════════
+function processLog() {
+    let rawDate = document.getElementById('logDate').value || getTodayStr();
+    const wt = parseFloat(document.getElementById('manWt').value);
+    const dist = parseFloat(document.getElementById('manDist').value) || 0;
+    const hr = parseInt(document.getElementById('manHR').value) || 0;
+    const cals = parseInt(document.getElementById('manCal').value) || 0;
+    const diet = document.getElementById('manDiet').value;
+    const note = document.getElementById('manNote').value;
+
+    if (isNaN(wt) || wt <= 0) return showToast('A.I.: ชั่งน้ำหนักก่อนเลยเว้ย!', 'error');
+
+    const dObj = new Date(rawDate + 'T12:00:00');
+    const dateStr = `${dObj.getDate().toString().padStart(2,'0')}/${(dObj.getMonth()+1).toString().padStart(2,'0')}/${dObj.getFullYear()}`;
+    const prevWt = state.history.length > 0 ? state.history[state.history.length-1].weight : state.startWt;
+
+    let roast = '';
+    let color = 'var(--border)';
+    let emoji = '🤖';
+
+    // Running roast logic
+    if (state.goal.startsWith('run_')) {
+        const mission = getRunMission(dObj);
+        if (mission.target > 0) {
+            if (dist === 0) {
+                roast += `<p style="color:var(--red);font-weight:800;margin-bottom:8px;">วันซ้อมแต่ไม่วิ่ง!! มาราธอนไม่แจกเหรียญคนขี้เกียจ!</p>`;
+                color = 'var(--red)'; emoji = '🤬';
+            } else if (dist < mission.target * 0.7) {
+                roast += `<p style="color:var(--gold);margin-bottom:8px;">เป้า ${mission.target}K แต่วิ่งแค่ ${dist}K... วันแข่งจะลากขาเข้าเส้นชัย!</p>`;
+                color = 'var(--gold)'; emoji = '😤';
+            } else if (dist >= mission.target) {
+                roast += `<p style="color:#60a5fa;margin-bottom:8px;font-weight:800;">เยี่ยม! เก็บระยะได้ตามแผน! วินัยแบบนี้แหละที่จะพาจบมาราธอน!</p>`;
+                color = 'var(--blue)'; emoji = '🏃';
+            } else {
+                roast += `<p style="color:var(--orange);margin-bottom:8px;">วิ่งได้ ${dist}K จากเป้า ${mission.target}K พอใช้ได้ แต่อย่าหยุดแค่นี้!</p>`;
+                color = 'var(--orange)'; emoji = '💪';
+            }
+        } else if (mission.target === 0 && dist > 3) {
+            roast += `<p style="color:var(--gold);margin-bottom:8px;">วันนี้ตารางให้พัก แต่มึงยังไปวิ่ง! กล้ามเนื้อไม่ฟื้นเดี๋ยวพัง!</p>`;
+            color = 'var(--gold)'; emoji = '⚠️';
+        }
+    }
+
+    // Weight
+    if (wt < prevWt) {
+        roast += `<p>น้ำหนักลด ${(prevWt-wt).toFixed(1)}kg! รักษาไว้!</p>`;
+        if (color === 'var(--border)') { color = 'var(--green)'; emoji = '🔥'; }
+    } else if (wt > prevWt) {
+        if (diet === 'perfect') roast += `<p>คุมอาหารแต่น้ำหนักขึ้น? แอบแดกดึกชัวร์!</p>`;
+        else roast += `<p>น้ำหนักขึ้น ${(wt-prevWt).toFixed(1)}kg รู้อยู่แล้วว่าทำอะไรไป!</p>`;
+        if (color === 'var(--border)') { color = 'var(--red)'; emoji = '📉'; }
+    } else {
+        roast += `<p>น้ำหนักนิ่ง พรุ่งนี้ซ้อมให้หนักกว่านี้!</p>`;
+        if (color === 'var(--border)') { color = 'var(--gold)'; emoji = '⚠️'; }
+    }
+
+    if (cals > 3000 && dist < 20) roast += `<p style="color:var(--red);">ยัดไป ${cals} แคล?! ถ้าไม่ได้วิ่ง 30K มา กำลังขุนตัวเองอยู่!</p>`;
+    if (hr > 175) roast += `<p style="color:var(--red);">HR ${hr}bpm สูงโคตร! ลดเพซลงมา ก่อนหัวใจวาย!</p>`;
+    if (note) roast += `<p style="color:var(--text-2);font-size:11px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">📝 ${note}</p>`;
+
+    const log = {
+        dateRaw: dObj.getTime(), dateStr, weight: wt, dist, hr, diet, cals, note,
+        feedback: roast, color, emoji
+    };
+
+    state.history.push(log);
+    state.history.sort((a,b) => a.dateRaw - b.dateRaw);
+
+    // XP + Level
+    let xpGain = 5;
+    if (dist > 0) xpGain += Math.floor(dist);
+    if (diet === 'perfect') xpGain += 3;
+    state.xp += xpGain;
+    const oldLevel = state.userLevel;
+    state.userLevel = Math.floor(state.xp / 10) + 1;
+
+    // Clear
+    ['manWt','manDist','manHR','manCal','manNote'].forEach(id => document.getElementById(id).value = '');
+
+    save();
+
+    if (state.userLevel > oldLevel) showToast(`⭐ LEVEL UP! LV.${state.userLevel}! +${xpGain}XP`, 'levelup');
+    else showToast(`✅ บันทึกแล้ว! +${xpGain} XP`, 'success');
+
+    bootDashboard();
+    switchTab('tabAnalytics', 3);
+}
+
+// ══════════════════════════════════════════════════════════════
+// RENDER HISTORY
+// ══════════════════════════════════════════════════════════════
+function renderHistory() {
+    const list = document.getElementById('histList');
+    if (!list) return;
+
+    if (state.history.length > 0) {
+        const last = state.history[state.history.length-1];
+        const panel = document.getElementById('aiFeedPanel');
+        panel.style.borderLeftColor = last.color;
+        document.getElementById('feedEmoji').textContent = last.emoji;
+        document.getElementById('feedText').innerHTML = last.feedback;
+    }
+
+    list.innerHTML = '';
+    [...state.history].reverse().forEach(log => {
+        const diff = (log.weight - state.startWt).toFixed(1);
+        const diffStr = diff > 0 ? `+${diff}` : diff;
+        const wtColor = parseFloat(diff) <= 0 ? 'var(--green)' : 'var(--red)';
+
+        const html = `
+        <div class="hist-item" style="border-left:3px solid ${log.color};">
+            <div>
+                <p style="font-size:12px;font-weight:700;color:var(--text-1);">${log.dateStr}</p>
+                <div style="display:flex;gap:5px;margin-top:5px;flex-wrap:wrap;">
+                    ${log.cals>0?`<span class="badge badge-orange" style="font-size:9px;">🍔 ${log.cals}kcal</span>`:''}
+                    ${log.dist>0?`<span class="badge badge-blue" style="font-size:9px;">🏃 ${log.dist}km</span>`:''}
+                    ${log.hr>0?`<span class="badge badge-red" style="font-size:9px;">❤️ ${log.hr}bpm</span>`:''}
+                </div>
+            </div>
+            <div style="text-align:right;">
+                <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--text-1);line-height:1;">${log.weight.toFixed(1)}</div>
+                <div style="font-size:10px;font-weight:700;color:${wtColor};">${diffStr} kg</div>
+            </div>
+        </div>`;
+        list.innerHTML += html;
+    });
+}
+
+// ══════════════════════════════════════════════════════════════
+// TAB SWITCHING
+// ══════════════════════════════════════════════════════════════
+function switchTab(id, idx) {
+    ['tabHome','tabPlan','tabLog','tabAnalytics'].forEach(t => {
+        const el = document.getElementById(t);
+        el.classList.add('hide');
+        el.classList.remove('fade-up');
+    });
+    const target = document.getElementById(id);
+    target.classList.remove('hide');
+    void target.offsetWidth; // reflow
+    target.classList.add('fade-up');
+
+    document.querySelectorAll('.nav-btn').forEach((b,i) => b.classList.toggle('active', i===idx));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    if (id === 'tabLog') { document.getElementById('logDate').value = getTodayStr(); updateRunReminder(); }
+    if (id === 'tabAnalytics') setTimeout(renderChart, 100);
+}
+
+// ══════════════════════════════════════════════════════════════
+// RESET
+// ══════════════════════════════════════════════════════════════
+function resetApp() {
+    if (confirm('A.I.: ยืนยันจะลบข้อมูลทั้งหมดและเริ่มใหม่ใช่ไหม?')) {
+        localStorage.removeItem(STORE);
+        location.reload();
+    }
+}
+
+// ══════════════════════════════════════════════════════════════
+// BOOT
+// ══════════════════════════════════════════════════════════════
+initApp();
+</script>
+
+</body>
+</html>
